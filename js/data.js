@@ -441,6 +441,7 @@
     return result;
   }
 
+
   // ============================================================
   // NOTA MÉDIA (para ranking top 50)
   // Para Fullstack: média de notaFront e notaBack (se entregues)
@@ -453,24 +454,9 @@
       const nb = parseFloat(student.notaBack);
       const nfinal = parseFloat(student.notaProjetoFinal);
       const notas = [];
-      if (
-        !isNaN(nf) &&
-        (student.projetoFront === "Entregou – Aprovado" ||
-          student.projetoFront === "Entregou – Reprovado")
-      )
-        notas.push(nf);
-      if (
-        !isNaN(nb) &&
-        (student.projetoBack === "Entregou – Aprovado" ||
-          student.projetoBack === "Entregou – Reprovado")
-      )
-        notas.push(nb);
-      if (
-        !isNaN(nfinal) &&
-        (student.projetoFinal === "Entregou – Aprovado" ||
-          student.projetoFinal === "Entregou – Reprovado")
-      )
-        notas.push(nfinal);
+      if (!isNaN(nf) && (student.projetoFront === "Entregou – Aprovado" || student.projetoFront === "Entregou – Reprovado")) notas.push(nf);
+      if (!isNaN(nb) && (student.projetoBack === "Entregou – Aprovado" || student.projetoBack === "Entregou – Reprovado")) notas.push(nb);
+      if (!isNaN(nfinal) && (student.projetoFinal === "Entregou – Aprovado" || student.projetoFinal === "Entregou – Reprovado")) notas.push(nfinal);
       if (notas.length === 0) return null;
       return notas.reduce((a, b) => a + b, 0) / notas.length;
     } else {
@@ -488,8 +474,8 @@
   // ============================================================
   function calcRanking(students) {
     const elegíveis = students
-      .map((s) => ({ ...s, _media: calcNotaMedia(s) }))
-      .filter((s) => s._media !== null)
+      .map(s => ({ ...s, _media: calcNotaMedia(s) }))
+      .filter(s => s._media !== null)
       .sort((a, b) => {
         // 1º critério: nota média DESC
         if (b._media !== a._media) return b._media - a._media;
@@ -507,9 +493,9 @@
     elegíveis.forEach((s, i) => {
       const pos = i + 1;
       let medalha = null;
-      if (pos <= 10) medalha = "ouro";
-      else if (pos <= 25) medalha = "prata";
-      else if (pos <= 50) medalha = "bronze";
+      if (pos <= 10)       medalha = "ouro";
+      else if (pos <= 25)  medalha = "prata";
+      else if (pos <= 50)  medalha = "bronze";
       if (medalha) result.set(s.id, { medalha, posicao: pos, media: s._media });
     });
     return result; // Map<id, {medalha, posicao, media}>
