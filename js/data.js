@@ -188,14 +188,15 @@
 
     if (!temDados) return { key: "vazio", label: "—" };
 
-    // 4.5. Prova de recuperação aprovada — verificada antes do projeto
-    //      (aluno pode ter feito a rec sem ter entregue projeto)
-    const recApproved =
-      student.provaRecuperacao === "Fez – Aprovado" &&
-      parseFloat(student.notaProvaRec || 0) >= 6;
-
-    if (recApproved)
-      return { key: "participacao", label: "Certificado de Participação" };
+    // 4.5. Prova de recuperação aprovada SEM projeto entregue
+    //      (só aplica se não entregou nenhum projeto)
+    if (!temProjetoEntregue) {
+      const recApproved =
+        student.provaRecuperacao === "Fez – Aprovado" &&
+        parseFloat(student.notaProvaRec || 0) >= 6;
+      if (recApproved)
+        return { key: "participacao", label: "Certificado de Participação" };
+    }
 
     // 5. Cálculo real — só chega aqui se tem projeto entregue
     let projectApproved = false;
@@ -219,7 +220,14 @@
     if (projectApproved)
       return { key: "aprovado", label: "Certificado de Conclusão" };
 
-    // 6. Fallback final: respeita statusImportado se existir
+    // 6. Prova de recuperação aprovada COM projeto entregue mas não aprovado
+    const recApproved =
+      student.provaRecuperacao === "Fez – Aprovado" &&
+      parseFloat(student.notaProvaRec || 0) >= 6;
+    if (recApproved)
+      return { key: "participacao", label: "Certificado de Participação" };
+
+    // 7. Fallback final: respeita statusImportado se existir
     if (student.statusImportado === "certificado_participacao")
       return { key: "participacao", label: "Certificado de Participação" };
     if (student.statusImportado === "certificado_conclusao")
@@ -441,7 +449,6 @@
     return result;
   }
 
-
   // ============================================================
   // NOTA MÉDIA (para ranking top 50)
   // Para Fullstack: média de notaFront e notaBack (se entregues)
@@ -454,9 +461,24 @@
       const nb = parseFloat(student.notaBack);
       const nfinal = parseFloat(student.notaProjetoFinal);
       const notas = [];
-      if (!isNaN(nf) && (student.projetoFront === "Entregou – Aprovado" || student.projetoFront === "Entregou – Reprovado")) notas.push(nf);
-      if (!isNaN(nb) && (student.projetoBack === "Entregou – Aprovado" || student.projetoBack === "Entregou – Reprovado")) notas.push(nb);
-      if (!isNaN(nfinal) && (student.projetoFinal === "Entregou – Aprovado" || student.projetoFinal === "Entregou – Reprovado")) notas.push(nfinal);
+      if (
+        !isNaN(nf) &&
+        (student.projetoFront === "Entregou – Aprovado" ||
+          student.projetoFront === "Entregou – Reprovado")
+      )
+        notas.push(nf);
+      if (
+        !isNaN(nb) &&
+        (student.projetoBack === "Entregou – Aprovado" ||
+          student.projetoBack === "Entregou – Reprovado")
+      )
+        notas.push(nb);
+      if (
+        !isNaN(nfinal) &&
+        (student.projetoFinal === "Entregou – Aprovado" ||
+          student.projetoFinal === "Entregou – Reprovado")
+      )
+        notas.push(nfinal);
       if (notas.length === 0) return null;
       return notas.reduce((a, b) => a + b, 0) / notas.length;
     } else {
@@ -474,8 +496,8 @@
   // ============================================================
   function calcRanking(students) {
     const elegíveis = students
-      .map(s => ({ ...s, _media: calcNotaMedia(s) }))
-      .filter(s => s._media !== null)
+      .map((s) => ({ ...s, _media: calcNotaMedia(s) }))
+      .filter((s) => s._media !== null)
       .sort((a, b) => {
         // 1º critério: nota média DESC
         if (b._media !== a._media) return b._media - a._media;
@@ -493,9 +515,9 @@
     elegíveis.forEach((s, i) => {
       const pos = i + 1;
       let medalha = null;
-      if (pos <= 10)       medalha = "ouro";
-      else if (pos <= 25)  medalha = "prata";
-      else if (pos <= 50)  medalha = "bronze";
+      if (pos <= 10) medalha = "ouro";
+      else if (pos <= 25) medalha = "prata";
+      else if (pos <= 50) medalha = "bronze";
       if (medalha) result.set(s.id, { medalha, posicao: pos, media: s._media });
     });
     return result; // Map<id, {medalha, posicao, media}>
