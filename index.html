@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geração Tech — Painel do Administrador</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <!-- LOGIN PAGE -->
+    <div id="loginPage" class="page-login hidden">
+      <div class="login-bg">
+        <div class="login-orb orb1"></div>
+        <div class="login-orb orb2"></div>
+        <div class="login-orb orb3"></div>
+      </div>
+      <div class="login-card">
+        <div class="login-logo">
+          <div class="logo-mark">GT</div>
+          <div class="logo-text">
+            <span class="logo-main">Geração Tech</span>
+            <span class="logo-sub">Painel Administrativo</span>
+          </div>
+        </div>
+        <div class="login-form">
+          <div class="field-group">
+            <label for="loginEmail">E-mail</label>
+            <input
+              type="email"
+              id="loginEmail"
+              placeholder="seu@email.com"
+              autocomplete="username"
+            />
+          </div>
+          <div class="field-group">
+            <label for="loginCode">Código de Acesso</label>
+            <div class="input-pw-wrap">
+              <input
+                type="password"
+                id="loginCode"
+                placeholder="••••••••••••••"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                class="toggle-pw"
+                id="togglePw"
+                aria-label="Mostrar senha"
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                  <circle cx="12" cy="12" r="3" />
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div id="loginError" class="login-error hidden">
+            Credenciais inválidas. Tente novamente.
+          </div>
+          <button id="btnLogin" class="btn-login">Entrar no Sistema</button>
+        </div>
+        <div class="login-footer">IEL Ceará — Programa Geração Tech © 2026</div>
+      </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="appPage" class="page-app hidden">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <button
+            class="sidebar-collapse-btn"
+            id="btnCollapseSidebar"
+            title="Recolher menu"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M15 18l-6-6 6-6" />
+            </svg>
+          </button>
+          <div class="sidebar-logo">
+            <div class="logo-mark sm">GT</div>
+            <div class="logo-text">
+              <span class="logo-main sm">Geração Tech</span>
+            </div>
+          </div>
+          <button
+            class="sidebar-toggle"
+            id="sidebarToggle"
+            aria-label="Fechar menu"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Supabase status -->
+        <div id="supabaseStatus">⏳ Verificando conexão...</div>
+
+        <nav class="sidebar-nav">
+          <div class="nav-label">Formações</div>
+          <button class="nav-item active" data-formation="fullstack">
+            <span class="nav-icon">⚡</span><span>Fullstack</span>
+            <span class="nav-badge" id="badge-fullstack">0</span>
+          </button>
+          <button class="nav-item" data-formation="ia-generativa">
+            <span class="nav-icon">🤖</span><span>IA Generativa</span>
+            <span class="nav-badge" id="badge-ia-generativa">0</span>
+          </button>
+          <button class="nav-item" data-formation="ia-soft-skills">
+            <span class="nav-icon">🧠</span><span>IA + Soft Skills</span>
+            <span class="nav-badge" id="badge-ia-soft-skills">0</span>
+          </button>
+        </nav>
+
+        <div class="sidebar-actions">
+          <div class="nav-label">Ferramentas</div>
+          <button class="nav-item" id="btnImport">
+            <span class="nav-icon">📥</span><span>Importar .xlsx</span>
+          </button>
+          <button class="nav-item" id="btnExport">
+            <span class="nav-icon">📤</span><span>Exportar .xlsx</span>
+          </button>
+          <button class="nav-item" id="btnAddStudent">
+            <span class="nav-icon">➕</span><span>Novo Aluno</span>
+          </button>
+          <!-- NOVO: botão relatório -->
+          <button class="nav-item" id="btnReport">
+            <span class="nav-icon">📊</span><span>Relatório</span>
+          </button>
+        </div>
+
+        <div class="sidebar-bottom">
+          <button class="nav-item logout-btn" id="btnLogout">
+            <span class="nav-icon">🚪</span><span>Sair</span>
+          </button>
+        </div>
+      </aside>
+
+      <!-- MAIN CONTENT WRAPPER — substituiu <main class="main-content"> -->
+      <div
+        style="
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          overflow: hidden;
+          min-width: 0;
+        "
+      >
+        <!-- ===== TABLE VIEW (tudo que existia antes) ===== -->
+        <div class="table-view" id="tableView">
+          <header class="topbar">
+            <button class="menu-btn" id="menuBtn" aria-label="Abrir menu">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M3 12h18M3 6h18M3 18h18" />
+              </svg>
+            </button>
+            <div class="topbar-title" id="topbarTitle">Fullstack</div>
+            <div class="topbar-stats" id="topbarStats"></div>
+            <button id="btnCompactToggle" title="Alternar para visão compacta">⊟ Compacto</button>
+            <button id="themeToggle">🌙 Tema</button>
+          </header>
+
+          <!-- Fill Assistant bar -->
+          <div class="fill-assistant-bar" id="fillAssistantBar">
+            <label class="fill-toggle-wrap" for="fillAssistantToggle">
+              <span class="toggle-switch">
+                <input type="checkbox" id="fillAssistantToggle" />
+                <span class="toggle-track"></span>
+              </span>
+              <span class="fill-toggle-label"
+                >✨ Preenchimento Inteligente</span
+              >
+            </label>
+            <span class="fill-hint">
+              Selecione alunos e clique em um deles para preencher em lote
+            </span>
+          </div>
+
+          <!-- Bulk delete bar -->
+          <div id="bulkDeleteBar" class="bulk-delete-bar hidden">
+            <span class="bulk-count">0 aluno(s) selecionado(s)</span>
+            <button
+              id="btnBulkFill"
+              class="btn-modal-apply"
+              style="display: none"
+            >
+              ✨ Preencher selecionados
+            </button>
+            <button id="btnBulkDelete" class="btn-bulk-delete">
+              🗑 Excluir selecionados
+            </button>
+            <button id="btnCancelSelection" class="btn-cancel-selection">
+              ✕ Cancelar
+            </button>
+          </div>
+
+          <div class="content-area">
+            <div class="summary-cards" id="summaryCards"></div>
+
+            <div class="table-wrapper">
+              <div class="table-toolbar">
+                <div class="search-wrap">
+                  <svg
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                  >
+                    <circle cx="11" cy="11" r="8" />
+                    <path d="M21 21l-4.35-4.35" />
+                  </svg>
+                  <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Buscar aluno..."
+                  />
+                </div>
+                <div class="filter-wrap">
+                  <select id="filterStatus">
+                    <option value="">Todos os status</option>
+                    <option value="aprovado">Aprovado</option>
+                    <option value="participacao">Participação</option>
+                    <option value="vinculacao">
+                      Certificado de Vinculação
+                    </option>
+                    <option value="reprovado-falta">Reprovado por Falta</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="table-scroll" id="tableScroll">
+                <table class="students-table" id="studentsTable">
+                  <thead id="tableHead"></thead>
+                  <tbody id="tableBody"></tbody>
+                </table>
+                <div class="empty-state hidden" id="emptyState">
+                  <div class="empty-icon">📋</div>
+                  <div class="empty-title">Nenhum aluno encontrado</div>
+                  <div class="empty-sub">
+                    Importe uma planilha ou adicione alunos manualmente
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- /table-view -->
+
+        <!-- ===== REPORT VIEW (novo) ===== -->
+        <div class="report-view" id="reportView">
+          <div class="report-topbar">
+            <button class="menu-btn" id="menuBtnReport" aria-label="Abrir menu">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M3 12h18M3 6h18M3 18h18" />
+              </svg>
+            </button>
+            <span class="report-topbar-title">📊 Relatório Gerencial</span>
+            <button class="btn-refresh-report" id="btnRefreshReport">
+              🔄 Atualizar
+            </button>
+            <button class="btn-print-report" id="btnPrintReport">
+              🖨️ Imprimir / PDF
+            </button>
+            <button
+              id="themeToggleReport"
+              style="
+                background: none;
+                border: 1px solid var(--border2);
+                border-radius: var(--radius-sm);
+                padding: 6px 11px;
+                cursor: pointer;
+                color: var(--text2);
+                font-size: 12.5px;
+                font-family: var(--font);
+                font-weight: 500;
+                transition: all var(--transition);
+                margin-left: 8px;
+                white-space: nowrap;
+              "
+            >
+              🌙 Tema
+            </button>
+          </div>
+          <div class="report-scroll" id="reportContent">
+            <div class="rpt-loading">
+              Clique em "Atualizar" para gerar o relatório.
+            </div>
+          </div>
+        </div>
+        <!-- /report-view -->
+      </div>
+      <!-- /main wrapper -->
+    </div>
+    <!-- /appPage -->
+
+    <!-- Hidden file input -->
+    <input type="file" id="fileInput" accept=".xlsx" style="display: none" />
+
+    <!-- SMART FILL MODAL -->
+    <div class="modal-overlay hidden" id="fillModal">
+      <div class="modal-box">
+        <button class="modal-close" id="fillModalClose">✕</button>
+        <div class="modal-header">
+          <div class="modal-icon">✨</div>
+          <div class="modal-title-wrap">
+            <div class="modal-title" id="fillModalTitle">
+              Preenchimento Inteligente
+            </div>
+            <div class="modal-subtitle" id="fillModalSubtitle">
+              Preencha os campos abaixo
+            </div>
+          </div>
+        </div>
+        <div class="modal-student-name" id="fillModalStudentName"></div>
+        <div class="modal-multi-notice hidden" id="fillModalMultiNotice"></div>
+        <div class="modal-fields" id="fillModalFields"></div>
+        <div class="modal-actions">
+          <button class="btn-modal-cancel" id="fillModalCancel">
+            Cancelar
+          </button>
+          <button class="btn-modal-apply" id="fillModalApply">✓ Aplicar</button>
+        </div>
+        <!-- Navegação entre alunos -->
+        <div class="modal-nav" id="fillModalNav">
+          <button class="btn-modal-nav" id="fillModalPrev" title="Aluno anterior (←)">← Anterior</button>
+          <span class="modal-nav-info" id="fillModalNavInfo"></span>
+          <button class="btn-modal-nav" id="fillModalNext" title="Próximo aluno (→)">Próximo →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPORT MODAL -->
+    <div class="modal-overlay hidden" id="exportModal">
+      <div class="modal-box export-modal-box">
+        <button class="modal-close" id="exportModalClose">✕</button>
+        <div class="modal-header">
+          <div class="modal-icon">📤</div>
+          <div class="modal-title-wrap">
+            <div class="modal-title">Exportar Planilha</div>
+            <div class="modal-subtitle">Escolha o escopo da exportação</div>
+          </div>
+        </div>
+        <div class="export-section-label">Formação</div>
+        <div class="export-options" id="exportFormationOptions">
+          <label class="export-option">
+            <input
+              type="radio"
+              name="exportFormation"
+              value="current"
+              checked
+            />
+            <div>
+              <div class="export-option-label" id="exportCurrentLabel">
+                ⚡ Fullstack (atual)
+              </div>
+              <div class="export-option-desc">
+                Exporta somente a formação que está visualizando
+              </div>
+            </div>
+          </label>
+          <label class="export-option">
+            <input type="radio" name="exportFormation" value="all" />
+            <div>
+              <div class="export-option-label">📋 Todas as formações</div>
+              <div class="export-option-desc">
+                Gera uma aba por formação + aba geral
+              </div>
+            </div>
+          </label>
+        </div>
+        <hr class="export-separator" />
+        <div class="export-section-label">Filtrar por Status</div>
+        <div class="export-status-grid">
+          <label class="export-status-item">
+            <input
+              type="checkbox"
+              name="exportStatus"
+              value=""
+              checked
+              id="exportStatusAll"
+            />
+            Todos os status
+          </label>
+          <label class="export-status-item">
+            <input type="checkbox" name="exportStatus" value="aprovado" />
+            🎓 Aprovado
+          </label>
+          <label class="export-status-item">
+            <input type="checkbox" name="exportStatus" value="participacao" />
+            📄 Participação
+          </label>
+          <label class="export-status-item">
+            <input type="checkbox" name="exportStatus" value="vinculacao" />
+            🔗 Vinculação
+          </label>
+          <label class="export-status-item">
+            <input
+              type="checkbox"
+              name="exportStatus"
+              value="reprovado-falta"
+            />
+            ❌ Reprovado/Falta
+          </label>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-modal-cancel" id="exportModalCancel">
+            Cancelar
+          </button>
+          <button class="btn-modal-apply" id="exportModalConfirm">
+            📤 Exportar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Scripts — ORDER MATTERS -->
+    <script src="js/auth.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/data.js"></script>
+    <script src="js/table.js"></script>
+    <script src="js/io.js"></script>
+    <script src="js/smartfill.js"></script>
+    <script src="js/report.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>

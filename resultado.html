@@ -1,0 +1,767 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geração Tech — Consultar Resultado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ── Reset & base ───────────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        font-size: 15px;
+      }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background: #16181f;
+        color: #b8bdd0;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px 48px;
+      }
+
+      /* ── Orbs decorativos (fundo) ───────────────────────────── */
+      .bg-orbs {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 0;
+      }
+      .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.12;
+      }
+      .orb1 {
+        width: 420px;
+        height: 420px;
+        background: #3768db;
+        top: -120px;
+        left: -100px;
+      }
+      .orb2 {
+        width: 340px;
+        height: 340px;
+        background: #7b4fff;
+        bottom: -80px;
+        right: -60px;
+      }
+      .orb3 {
+        width: 220px;
+        height: 220px;
+        background: #26b667;
+        top: 50%;
+        left: 60%;
+      }
+
+      /* ── Card principal ─────────────────────────────────────── */
+      .card {
+        position: relative;
+        z-index: 1;
+        background: #1c1f28;
+        border: 1px solid #2a2f42;
+        border-radius: 20px;
+        padding: 44px 40px 40px;
+        width: 100%;
+        max-width: 480px;
+        box-shadow: 0 8px 40px rgba(0, 0, 0, 0.45);
+      }
+
+      /* ── Logo ───────────────────────────────────────────────── */
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 36px;
+      }
+      .logo-mark {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, #3768db, #7b4fff);
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.5px;
+        flex-shrink: 0;
+      }
+      .logo-text {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .logo-main {
+        font-size: 19px;
+        font-weight: 700;
+        color: #cdd2e8;
+        line-height: 1.1;
+      }
+      .logo-sub {
+        font-size: 10.5px;
+        color: #4e5570;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+
+      /* ── Heading ────────────────────────────────────────────── */
+      h1 {
+        font-size: 17px;
+        font-weight: 600;
+        color: #cdd2e8;
+        margin-bottom: 6px;
+      }
+      .subtitle {
+        font-size: 13px;
+        color: #4e5570;
+        margin-bottom: 28px;
+        line-height: 1.5;
+      }
+
+      /* ── Input ──────────────────────────────────────────────── */
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 7px;
+        margin-bottom: 16px;
+      }
+      label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #7a8099;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        background: #222636;
+        border: 1px solid #343a52;
+        border-radius: 9px;
+        padding: 12px 14px;
+        font-size: 14px;
+        font-family: inherit;
+        color: #cdd2e8;
+        transition:
+          border-color 0.15s,
+          box-shadow 0.15s;
+        outline: none;
+      }
+      input[type="text"]::placeholder {
+        color: #4e5570;
+      }
+      input[type="text"]:focus {
+        border-color: #3768db;
+        box-shadow: 0 0 0 3px rgba(55, 104, 219, 0.18);
+      }
+
+      /* ── Botão ──────────────────────────────────────────────── */
+      .btn {
+        width: 100%;
+        background: linear-gradient(135deg, #3768db, #467cf0);
+        border: none;
+        border-radius: 9px;
+        padding: 13px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+        cursor: pointer;
+        font-family: inherit;
+        transition:
+          opacity 0.15s,
+          transform 0.1s;
+        margin-top: 4px;
+      }
+      .btn:hover {
+        opacity: 0.92;
+      }
+      .btn:active {
+        transform: scale(0.98);
+      }
+      .btn:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+
+      /* ── Resultado ──────────────────────────────────────────── */
+      #result {
+        margin-top: 28px;
+      }
+
+      /* Loading */
+      .loading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 13px;
+        color: #4e5570;
+      }
+      .spinner {
+        width: 18px;
+        height: 18px;
+        border: 2px solid #343a52;
+        border-top-color: #3768db;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        flex-shrink: 0;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* Mensagem de refinamento (nome duplicado) */
+      .refine-msg {
+        background: rgba(218, 174, 55, 0.08);
+        border: 1px solid rgba(218, 174, 55, 0.25);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 13px;
+        color: #daae37;
+        line-height: 1.55;
+      }
+      .refine-msg strong {
+        font-weight: 600;
+      }
+
+      /* Card de resultado individual */
+      .result-card {
+        border-radius: 14px;
+        padding: 24px 22px;
+        border: 1px solid transparent;
+        animation: fadeIn 0.35s ease;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+
+      /* Aprovado */
+      .result-card.aprovado {
+        background: rgba(38, 182, 103, 0.07);
+        border-color: rgba(38, 182, 103, 0.25);
+      }
+      /* Participação / Vinculação */
+      .result-card.participacao,
+      .result-card.vinculacao {
+        background: rgba(55, 104, 219, 0.07);
+        border-color: rgba(55, 104, 219, 0.25);
+      }
+      /* Reprovado */
+      .result-card.reprovado-falta {
+        background: rgba(207, 68, 68, 0.07);
+        border-color: rgba(207, 68, 68, 0.25);
+      }
+      /* Sem dados */
+      .result-card.vazio {
+        background: rgba(78, 85, 112, 0.1);
+        border-color: rgba(78, 85, 112, 0.25);
+      }
+
+      .result-icon {
+        font-size: 42px;
+        margin-bottom: 14px;
+        display: block;
+        text-align: center;
+      }
+      .result-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: #cdd2e8;
+        text-align: center;
+        margin-bottom: 4px;
+      }
+      .result-formacao {
+        font-size: 11.5px;
+        color: #4e5570;
+        text-align: center;
+        margin-bottom: 18px;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        font-weight: 500;
+      }
+      .result-divider {
+        height: 1px;
+        background: #2a2f42;
+        margin: 0 0 18px;
+      }
+      .result-msg {
+        text-align: center;
+        font-size: 14.5px;
+        line-height: 1.65;
+      }
+      .result-msg .highlight {
+        font-weight: 700;
+        font-size: 16px;
+        display: block;
+        margin-bottom: 6px;
+      }
+      .highlight.green {
+        color: #26b667;
+      }
+      .highlight.blue {
+        color: #467cf0;
+      }
+      .highlight.red {
+        color: #cf4444;
+      }
+      .highlight.gray {
+        color: #7a8099;
+      }
+
+      /* ── Botão de nova busca ─────────────────────────────────── */
+      .btn-nova {
+        display: block;
+        width: 100%;
+        margin-top: 14px;
+        background: none;
+        border: 1px solid #343a52;
+        border-radius: 9px;
+        padding: 10px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #7a8099;
+        cursor: pointer;
+        font-family: inherit;
+        transition:
+          background 0.15s,
+          color 0.15s;
+      }
+      .btn-nova:hover {
+        background: #222636;
+        color: #cdd2e8;
+      }
+
+      /* ── Múltiplos resultados ───────────────────────────────── */
+      .multi-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 4px;
+      }
+      .multi-item {
+        background: #222636;
+        border: 1px solid #343a52;
+        border-radius: 10px;
+        padding: 13px 16px;
+        cursor: pointer;
+        transition:
+          border-color 0.15s,
+          background 0.15s;
+      }
+      .multi-item:hover {
+        border-color: #3768db;
+        background: #1e2233;
+      }
+      .multi-item-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #cdd2e8;
+      }
+      .multi-item-sub {
+        font-size: 12px;
+        color: #4e5570;
+        margin-top: 3px;
+      }
+
+      /* ── Rodapé ─────────────────────────────────────────────── */
+      .footer {
+        position: relative;
+        z-index: 1;
+        margin-top: 28px;
+        font-size: 11.5px;
+        color: #2e3450;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-orbs">
+      <div class="orb orb1"></div>
+      <div class="orb orb2"></div>
+      <div class="orb orb3"></div>
+    </div>
+
+    <div class="card">
+      <div class="logo">
+        <div class="logo-mark">GT</div>
+        <div class="logo-text">
+          <span class="logo-main">Geração Tech</span>
+          <span class="logo-sub">Consulta de Resultado</span>
+        </div>
+      </div>
+
+      <h1>Consulte seu resultado</h1>
+      <p class="subtitle">
+        Digite seu nome completo para verificar sua situação no programa Geração
+        Tech.
+      </p>
+
+      <div class="field">
+        <label for="nomeInput">Nome completo</label>
+        <input
+          type="text"
+          id="nomeInput"
+          placeholder="Ex: Maria Silva Santos"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
+        />
+      </div>
+
+      <button class="btn" id="btnBuscar">Consultar resultado</button>
+
+      <div id="result"></div>
+    </div>
+
+    <p class="footer">IEL Ceará — Programa Geração Tech © 2026</p>
+
+    <script src="js/config.js"></script>
+
+    <script>
+      (function () {
+        "use strict";
+
+        // ── Configuração Supabase ──────────────────────────────────
+
+        const SUPABASE_URL = window.ENV?.SUPABASE_URL || "";
+        const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
+
+        const TABLES = [
+          { table: "alunos_fullstack", label: "Fullstack" },
+          { table: "alunos_ia_generativa", label: "IA Generativa" },
+          { table: "alunos_ia_soft_skills", label: "IA + Soft Skills" },
+        ];
+
+        // ── Busca no Supabase ──────────────────────────────────────
+        async function buscarAluno(nome) {
+          const resultados = [];
+          for (const { table, label } of TABLES) {
+            const url = `${SUPABASE_URL}/rest/v1/${table}?select=*`;
+            const res = await fetch(url, {
+              headers: {
+                apikey: SUPABASE_ANON_KEY,
+                Authorization: "Bearer " + SUPABASE_ANON_KEY,
+              },
+            });
+            if (!res.ok) continue;
+            const rows = await res.json();
+            rows.forEach((row) => {
+              if (nomesSimilares(row.nome, nome)) {
+                resultados.push({ ...row, _formacaoLabel: label });
+              }
+            });
+          }
+          return resultados;
+        }
+
+        // ── Normalização de nome ───────────────────────────────────
+        function normalizar(str) {
+          return (str || "")
+            .toLowerCase()
+            .trim()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/\s+/g, " ");
+        }
+
+        function nomesSimilares(a, b) {
+          const na = normalizar(a);
+          const nb = normalizar(b);
+          if (na === nb) return true;
+          // Verifica se todos os tokens de B estão em A (busca parcial tolerante)
+          const tokensB = nb.split(" ").filter(Boolean);
+          return tokensB.every((t) => na.includes(t));
+        }
+
+        // ── Cálculo de status (espelha data.js) ───────────────────
+        function calcStatus(row) {
+          // Mapeia colunas DB → JS
+          const s = {
+            reprovadoFalta: row.reprovado_falta,
+            statusImportado: row.status_importado,
+            provaRecuperacao: row.prova_recuperacao,
+            notaProvaRec: row.nota_prova_rec,
+            projetoFinal: row.projeto_final,
+            notaProjetoFinal: row.nota_projeto_final,
+            projetoFront: row.projeto_front,
+            notaFront: row.nota_front,
+            projetoBack: row.projeto_back,
+            notaBack: row.nota_back,
+            presencaFinalPlat: row.presenca_final_plat,
+            formacao: row.formacao,
+          };
+
+          if (s.reprovadoFalta === "Sim")
+            return { key: "reprovado-falta", label: "Reprovado por Falta" };
+
+          const entregou = (v) =>
+            v === "Entregou – Aprovado" || v === "Entregou – Reprovado";
+          const temProjeto =
+            entregou(s.projetoFinal) ||
+            entregou(s.projetoFront) ||
+            entregou(s.projetoBack);
+
+          if (!temProjeto && s.statusImportado) {
+            if (s.statusImportado === "certificado_conclusao")
+              return { key: "aprovado", label: "Certificado de Conclusão" };
+            if (s.statusImportado === "certificado_participacao")
+              return {
+                key: "participacao",
+                label: "Certificado de Participação",
+              };
+            if (s.statusImportado === "certificado_vinculacao")
+              return { key: "vinculacao", label: "Certificado de Vinculação" };
+            if (s.statusImportado === "reprovado_falta")
+              return { key: "reprovado-falta", label: "Reprovado por Falta" };
+          }
+
+          const temDados =
+            s.provaRecuperacao ||
+            s.projetoFinal ||
+            s.projetoFront ||
+            s.projetoBack ||
+            s.reprovadoFalta ||
+            s.presencaFinalPlat;
+          if (!temDados) return { key: "vazio", label: "—" };
+
+          let aprovado = false;
+          if (s.formacao === "fullstack") {
+            const frontOk =
+              s.projetoFront === "Entregou – Aprovado" &&
+              parseFloat(s.notaFront || 0) >= 7;
+            const backOk =
+              s.projetoBack === "Entregou – Aprovado" &&
+              parseFloat(s.notaBack || 0) >= 7;
+            const finalOk =
+              s.projetoFinal === "Entregou – Aprovado" &&
+              parseFloat(s.notaProjetoFinal || 0) >= 7;
+            aprovado = (frontOk && backOk) || finalOk;
+          } else {
+            aprovado =
+              s.projetoFinal === "Entregou – Aprovado" &&
+              parseFloat(s.notaProjetoFinal || 0) >= 7;
+          }
+          if (aprovado)
+            return { key: "aprovado", label: "Certificado de Conclusão" };
+
+          const recOk =
+            s.provaRecuperacao === "Fez – Aprovado" &&
+            parseFloat(s.notaProvaRec || 0) >= 6;
+          if (recOk)
+            return {
+              key: "participacao",
+              label: "Certificado de Participação",
+            };
+
+          if (s.statusImportado === "certificado_participacao")
+            return {
+              key: "participacao",
+              label: "Certificado de Participação",
+            };
+          if (s.statusImportado === "certificado_conclusao")
+            return { key: "aprovado", label: "Certificado de Conclusão" };
+
+          return { key: "vinculacao", label: "Certificado de Vinculação" };
+        }
+
+        // ── Renderização ───────────────────────────────────────────
+        const resultDiv = document.getElementById("result");
+
+        function mostrarLoading() {
+          resultDiv.innerHTML = `
+          <div class="loading">
+            <div class="spinner"></div>
+            Buscando...
+          </div>`;
+        }
+
+        function mostrarRefinamento() {
+          resultDiv.innerHTML = `
+          <div class="refine-msg">
+            <strong>Encontramos mais de um aluno com esse nome.</strong><br>
+            Por favor, digite seu nome completo para identificarmos corretamente.
+          </div>
+          <button class="btn-nova" id="btnNova">← Tentar novamente</button>`;
+          document.getElementById("btnNova").onclick = limpar;
+        }
+
+        function mostrarMultiplos(resultados) {
+          // Mostra lista para o aluno escolher — pode acontecer com nomes muito comuns
+          let html = `<p style="font-size:13px;color:#7a8099;margin-bottom:12px;">
+          Encontramos ${resultados.length} alunos. Clique no seu nome:</p>
+          <div class="multi-list">`;
+          resultados.forEach((r, i) => {
+            html += `
+            <div class="multi-item" data-idx="${i}">
+              <div class="multi-item-name">${r.nome}</div>
+              <div class="multi-item-sub">${r._formacaoLabel}</div>
+            </div>`;
+          });
+          html += `</div><button class="btn-nova" id="btnNova" style="margin-top:14px">← Nova busca</button>`;
+          resultDiv.innerHTML = html;
+          document.getElementById("btnNova").onclick = limpar;
+          resultDiv.querySelectorAll(".multi-item").forEach((el) => {
+            el.addEventListener("click", () => {
+              const r = resultados[parseInt(el.dataset.idx)];
+              mostrarResultado(r);
+            });
+          });
+        }
+
+        function mostrarResultado(row) {
+          const status = calcStatus(row);
+
+          const configs = {
+            aprovado: {
+              icon: "🎉",
+              highlightClass: "green",
+              titulo: "Parabéns! Você foi aprovado.",
+              msg: `Você concluiu o curso <strong>${row._formacaoLabel}</strong> com sucesso e tem direito ao <strong>Certificado de Conclusão</strong>.`,
+            },
+            participacao: {
+              icon: "👏",
+              highlightClass: "blue",
+              titulo: "Você completou o curso!",
+              msg: `Você participou do curso <strong>${row._formacaoLabel}</strong> e tem direito ao <strong>Certificado de Participação</strong>.`,
+            },
+            vinculacao: {
+              icon: "📋",
+              highlightClass: "blue",
+              titulo: "Você participou do curso.",
+              msg: `Sua participação no curso <strong>${row._formacaoLabel}</strong> foi registrada com direito ao <strong>Certificado de Vinculação</strong>.`,
+            },
+            "reprovado-falta": {
+              icon: "😔",
+              highlightClass: "red",
+              titulo: "Infelizmente, não foi dessa vez.",
+              msg: `Sua participação no curso <strong>${row._formacaoLabel}</strong> foi encerrada por frequência insuficiente. Em caso de dúvidas, entre em contato com a coordenação.`,
+            },
+            vazio: {
+              icon: "⏳",
+              highlightClass: "gray",
+              titulo: `Oi, ${row.nome.split(" ")[0]}! Sua nota ainda vai sair, é só aguardar.`,
+              msg: `Seus dados do curso <strong>${row._formacaoLabel}</strong> ainda estão sendo processados pela coordenação. Em breve seu resultado estará disponível aqui.`,
+            },
+          };
+
+          const cfg = configs[status.key] || configs["vazio"];
+
+          resultDiv.innerHTML = `
+          <div class="result-card ${status.key}">
+            <span class="result-icon">${cfg.icon}</span>
+            <div class="result-name">${row.nome}</div>
+            <div class="result-formacao">${row._formacaoLabel}</div>
+            <div class="result-divider"></div>
+            <div class="result-msg">
+              <span class="highlight ${cfg.highlightClass}">${cfg.titulo}</span>
+              ${cfg.msg}
+            </div>
+          </div>
+          <button class="btn-nova" id="btnNova">← Consultar outro aluno</button>`;
+
+          document.getElementById("btnNova").onclick = limpar;
+        }
+
+        function mostrarNaoEncontrado() {
+          resultDiv.innerHTML = `
+          <div class="result-card vazio">
+            <span class="result-icon">🔍</span>
+            <div class="result-msg">
+              <span class="highlight gray">Nenhum aluno encontrado.</span>
+              Verifique se digitou o nome corretamente ou entre em contato com a coordenação.
+            </div>
+          </div>
+          <button class="btn-nova" id="btnNova">← Tentar novamente</button>`;
+          document.getElementById("btnNova").onclick = limpar;
+        }
+
+        function limpar() {
+          resultDiv.innerHTML = "";
+          const inp = document.getElementById("nomeInput");
+          inp.value = "";
+          inp.focus();
+        }
+
+        // ── Busca principal ────────────────────────────────────────
+        async function buscar() {
+          const nome = document.getElementById("nomeInput").value.trim();
+          if (!nome || nome.length < 3) {
+            document.getElementById("nomeInput").focus();
+            return;
+          }
+
+          const btn = document.getElementById("btnBuscar");
+          btn.disabled = true;
+          mostrarLoading();
+
+          try {
+            const resultados = await buscarAluno(nome);
+
+            if (resultados.length === 0) {
+              mostrarNaoEncontrado();
+            } else if (resultados.length === 1) {
+              mostrarResultado(resultados[0]);
+            } else {
+              // Verifica se há um match exato — se sim, mostra direto
+              const exato = resultados.filter(
+                (r) => normalizar(r.nome) === normalizar(nome),
+              );
+              if (exato.length === 1) {
+                mostrarResultado(exato[0]);
+              } else if (resultados.length <= 5) {
+                // Poucos resultados — deixa o aluno escolher
+                mostrarMultiplos(resultados);
+              } else {
+                // Muitos resultados — pede nome mais completo
+                mostrarRefinamento();
+              }
+            }
+          } catch (err) {
+            resultDiv.innerHTML = `
+            <div class="refine-msg" style="border-color:rgba(207,68,68,0.3);color:#cf4444;background:rgba(207,68,68,0.06)">
+              Erro ao consultar. Verifique sua conexão e tente novamente.
+            </div>`;
+            console.error(err);
+          }
+
+          btn.disabled = false;
+        }
+
+        // ── Eventos ────────────────────────────────────────────────
+        document.getElementById("btnBuscar").addEventListener("click", buscar);
+        document
+          .getElementById("nomeInput")
+          .addEventListener("keydown", (e) => {
+            if (e.key === "Enter") buscar();
+          });
+      })();
+    </script>
+  </body>
+</html>

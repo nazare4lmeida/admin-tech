@@ -1,0 +1,22 @@
+{
+  "name": "geracaotech_v4",
+  "version": "1.0.0",
+  "description": "Geração Tech — Painel Administrativo",
+  "main": "build.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "node build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nazare4lmeida/admin-tech.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/nazare4lmeida/admin-tech/issues"
+  },
+  "homepage": "https://github.com/nazare4lmeida/admin-tech#readme"
+}
