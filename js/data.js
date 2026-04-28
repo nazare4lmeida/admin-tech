@@ -166,6 +166,7 @@
       projetoEntregue(student.projetoBack);
 
     // 3. Se não entregou nenhum projeto, o statusImportado é a fonte de verdade
+    //    MAS antes de retornar vinculação, verifica se fez recuperação aprovada
     if (!temProjetoEntregue && student.statusImportado) {
       if (student.statusImportado === "certificado_conclusao")
         return { key: "aprovado", label: "Certificado de Conclusão" };
@@ -173,7 +174,7 @@
         return { key: "participacao", label: "Certificado de Participação" };
       if (student.statusImportado === "reprovado_falta")
         return { key: "reprovado-falta", label: "Reprovado por Falta" };
-      // certificado_vinculacao: antes de confirmar, verifica se fez recuperação
+      // certificado_vinculacao: verifica recuperação antes de confirmar
       const recOk =
         student.provaRecuperacao === "Fez – Aprovado" &&
         parseFloat(student.notaProvaRec || 0) >= 6;
@@ -193,8 +194,7 @@
 
     if (!temDados) return { key: "vazio", label: "—" };
 
-    // 4.5. Prova de recuperação aprovada SEM projeto entregue
-    //      (só aplica se não entregou nenhum projeto)
+    // 4.5. Sem projeto entregue mas com recuperação aprovada
     if (!temProjetoEntregue) {
       const recApproved =
         student.provaRecuperacao === "Fez – Aprovado" &&
@@ -203,7 +203,7 @@
         return { key: "participacao", label: "Certificado de Participação" };
     }
 
-    // 5. Cálculo real — só chega aqui se tem projeto entregue
+    // 5. Cálculo real de projeto
     let projectApproved = false;
     if (student.formacao === "fullstack") {
       const frontOk =
@@ -225,7 +225,7 @@
     if (projectApproved)
       return { key: "aprovado", label: "Certificado de Conclusão" };
 
-    // 6. Prova de recuperação aprovada COM projeto entregue mas não aprovado
+    // 6. Projeto entregue mas não aprovado — verifica recuperação
     const recApproved =
       student.provaRecuperacao === "Fez – Aprovado" &&
       parseFloat(student.notaProvaRec || 0) >= 6;
@@ -494,38 +494,97 @@
   }
 
   // ============================================================
-  // RANKING TOP 50 — retorna array com medalha atribuída
-  // Ordena por nota média DESC, desempate por progressoCurso DESC
-  // Top 10 = ouro, 11-25 = prata, 26-50 = bronze
-  // Só alunos com nota média calculável entram no ranking
+  // RANKING TOP 50 — proporcional entre as 3 formações
+  // Vagas fixas por formação e medalha:
+  //   Ouro(10):   fullstack=5, ia-generativa=3, ia-soft-skills=2
+  //   Prata(15):  fullstack=7, ia-generativa=5, ia-soft-skills=3
+  //   Bronze(25): fullstack=12, ia-generativa=10, ia-soft-skills=3
+  // Sobras redistribuídas proporcionalmente entre as demais formações
+  // Critérios de ordenação: nota média > presença > progresso
   // ============================================================
   function calcRanking(students) {
-    const elegíveis = students
-      .map((s) => ({ ...s, _media: calcNotaMedia(s) }))
-      .filter((s) => s._media !== null)
-      .sort((a, b) => {
-        // 1º critério: nota média DESC
+    // Vagas fixas por medalha e formação
+    const VAGAS = {
+      ouro: { fullstack: 5, "ia-generativa": 3, "ia-soft-skills": 2 },
+      prata: { fullstack: 7, "ia-generativa": 5, "ia-soft-skills": 3 },
+      bronze: { fullstack: 12, "ia-generativa": 10, "ia-soft-skills": 3 },
+    };
+
+    // Função de ordenação por nota > presença > progresso
+    function ordenar(lista) {
+      return lista.sort((a, b) => {
         if (b._media !== a._media) return b._media - a._media;
-        // 2º critério: presença final DESC
         const presA = parseFloat(a.presencaFinalPlat) || 0;
         const presB = parseFloat(b.presencaFinalPlat) || 0;
         if (presB !== presA) return presB - presA;
-        // 3º critério: progresso no curso DESC
         const progA = parseFloat(a.progressoCurso) || 0;
         const progB = parseFloat(b.progressoCurso) || 0;
         return progB - progA;
       });
+    }
+
+    // Separa elegíveis por formação (só quem tem nota média calculável)
+    const porFormacao = {};
+    FORMATIONS.forEach((f) => {
+      porFormacao[f.id] = [];
+    });
+    students
+      .map((s) => ({ ...s, _media: calcNotaMedia(s) }))
+      .filter((s) => s._media !== null)
+      .forEach((s) => {
+        if (porFormacao[s.formacao]) porFormacao[s.formacao].push(s);
+      });
+    // Ordena cada turma internamente
+    Object.keys(porFormacao).forEach((fid) => ordenar(porFormacao[fid]));
 
     const result = new Map();
-    elegíveis.forEach((s, i) => {
-      const pos = i + 1;
-      let medalha = null;
-      if (pos <= 10) medalha = "ouro";
-      else if (pos <= 25) medalha = "prata";
-      else if (pos <= 50) medalha = "bronze";
-      if (medalha) result.set(s.id, { medalha, posicao: pos, media: s._media });
+    const jaEscolhidos = new Set(); // ids já premiados em rodadas anteriores
+
+    ["ouro", "prata", "bronze"].forEach((medalha) => {
+      const vagasPorFormacao = { ...VAGAS[medalha] };
+      const escolhidos = {};
+      FORMATIONS.forEach((f) => {
+        escolhidos[f.id] = [];
+      });
+      let totalSobras = 0;
+
+      // 1ª passagem: cada formação entrega seus melhores até o limite
+      FORMATIONS.forEach((f) => {
+        const disponiveis = porFormacao[f.id].filter(
+          (s) => !jaEscolhidos.has(s.id),
+        );
+        const vagas = vagasPorFormacao[f.id] || 0;
+        escolhidos[f.id] = disponiveis.slice(0, vagas);
+        totalSobras += Math.max(0, vagas - escolhidos[f.id].length);
+      });
+
+      // 2ª passagem: redistribui sobras pelo pool global (todos não escolhidos ainda)
+      if (totalSobras > 0) {
+        const jaNestaRodada = new Set(
+          FORMATIONS.flatMap((f) => escolhidos[f.id].map((s) => s.id)),
+        );
+        const pool = FORMATIONS.flatMap((f) =>
+          porFormacao[f.id].filter(
+            (s) => !jaEscolhidos.has(s.id) && !jaNestaRodada.has(s.id),
+          ),
+        );
+        ordenar(pool);
+        pool.slice(0, totalSobras).forEach((s) => {
+          if (!escolhidos[s.formacao]) escolhidos[s.formacao] = [];
+          escolhidos[s.formacao].push(s);
+        });
+      }
+
+      // Registra medalhas e marca como escolhidos
+      FORMATIONS.forEach((f) => {
+        (escolhidos[f.id] || []).forEach((s) => {
+          jaEscolhidos.add(s.id);
+          result.set(s.id, { medalha, media: s._media });
+        });
+      });
     });
-    return result; // Map<id, {medalha, posicao, media}>
+
+    return result; // Map<id, {medalha, media}>
   }
 
   window.GT = {
