@@ -156,7 +156,6 @@
     }
 
     // 2. Verifica se há projeto EFETIVAMENTE entregue
-    //    "Não entregou" NÃO conta — só Aprovado ou Reprovado conta
     const projetoEntregue = (val) =>
       val === "Entregou – Aprovado" || val === "Entregou – Reprovado";
 
@@ -165,25 +164,7 @@
       projetoEntregue(student.projetoFront) ||
       projetoEntregue(student.projetoBack);
 
-    // 3. Se não entregou nenhum projeto, o statusImportado é a fonte de verdade
-    //    MAS antes de retornar vinculação, verifica se fez recuperação aprovada
-    if (!temProjetoEntregue && student.statusImportado) {
-      if (student.statusImportado === "certificado_conclusao")
-        return { key: "aprovado", label: "Certificado de Conclusão" };
-      if (student.statusImportado === "certificado_participacao")
-        return { key: "participacao", label: "Certificado de Participação" };
-      if (student.statusImportado === "reprovado_falta")
-        return { key: "reprovado-falta", label: "Reprovado por Falta" };
-      // certificado_vinculacao: verifica recuperação antes de confirmar
-      const recOk =
-        student.provaRecuperacao === "Fez – Aprovado" &&
-        parseFloat(student.notaProvaRec || 0) >= 6;
-      if (recOk)
-        return { key: "participacao", label: "Certificado de Participação" };
-      return { key: "vinculacao", label: "Certificado de Vinculação" };
-    }
-
-    // 4. Sem nenhum dado relevante
+    // 3. Sem nenhum dado real preenchido — usa statusImportado se existir
     const temDados =
       student.provaRecuperacao ||
       student.projetoFinal ||
@@ -192,9 +173,20 @@
       student.reprovadoFalta ||
       student.presencaFinalPlat;
 
-    if (!temDados) return { key: "vazio", label: "—" };
+    if (!temDados) {
+      if (!student.statusImportado) return { key: "vazio", label: "—" };
+      if (student.statusImportado === "certificado_conclusao")
+        return { key: "aprovado", label: "Certificado de Conclusão" };
+      if (student.statusImportado === "certificado_participacao")
+        return { key: "participacao", label: "Certificado de Participação" };
+      if (student.statusImportado === "certificado_vinculacao")
+        return { key: "vinculacao", label: "Certificado de Vinculação" };
+      if (student.statusImportado === "reprovado_falta")
+        return { key: "reprovado-falta", label: "Reprovado por Falta" };
+      return { key: "vazio", label: "—" };
+    }
 
-    // 4.5. Sem projeto entregue mas com recuperação aprovada
+    // 4. Tem dados reais — recuperação sem projeto entregue
     if (!temProjetoEntregue) {
       const recApproved =
         student.provaRecuperacao === "Fez – Aprovado" &&
@@ -232,12 +224,7 @@
     if (recApproved)
       return { key: "participacao", label: "Certificado de Participação" };
 
-    // 7. Fallback final: respeita statusImportado se existir
-    if (student.statusImportado === "certificado_participacao")
-      return { key: "participacao", label: "Certificado de Participação" };
-    if (student.statusImportado === "certificado_conclusao")
-      return { key: "aprovado", label: "Certificado de Conclusão" };
-
+    // 7. Nenhuma condição de aprovação — vinculação
     return { key: "vinculacao", label: "Certificado de Vinculação" };
   }
 
