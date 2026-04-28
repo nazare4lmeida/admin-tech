@@ -171,10 +171,15 @@
         return { key: "aprovado", label: "Certificado de Conclusão" };
       if (student.statusImportado === "certificado_participacao")
         return { key: "participacao", label: "Certificado de Participação" };
-      if (student.statusImportado === "certificado_vinculacao")
-        return { key: "vinculacao", label: "Certificado de Vinculação" };
       if (student.statusImportado === "reprovado_falta")
         return { key: "reprovado-falta", label: "Reprovado por Falta" };
+      // certificado_vinculacao: antes de confirmar, verifica se fez recuperação
+      const recOk =
+        student.provaRecuperacao === "Fez – Aprovado" &&
+        parseFloat(student.notaProvaRec || 0) >= 6;
+      if (recOk)
+        return { key: "participacao", label: "Certificado de Participação" };
+      return { key: "vinculacao", label: "Certificado de Vinculação" };
     }
 
     // 4. Sem nenhum dado relevante
