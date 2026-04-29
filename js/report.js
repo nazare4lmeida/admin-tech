@@ -1,5 +1,11 @@
 /**
- * report.js — Módulo de Relatório Gerencial v1
+ * report.js — Módulo de Relatório Gerencial v2
+ * Acréscimos v2:
+ *  - Seção de Progresso (geral + por turma)
+ *  - Seção de Top 50 com contagem de medalhas por turma
+ *  - Exportar relatório como HTML estático (colorido)
+ *  - Exportar relatório como HTML editável
+ *  - Correção de impressão PDF (página completa via @media print)
  */
 
 (function () {
@@ -55,6 +61,21 @@
       const st = GT.calcStatus(s).key;
       statusCounts[st] = (statusCounts[st] || 0) + 1;
     });
+
+    // Progresso do curso
+    const progressos = students
+      .map((s) => parseFloat(s.progressoCurso))
+      .filter((n) => !isNaN(n) && n > 0);
+    const progressoMedia = progressos.length
+      ? progressos.reduce((a, b) => a + b, 0) / progressos.length
+      : null;
+    const progressoFaixas = {
+      "75-100": progressos.filter((p) => p >= 75).length,
+      "50-74": progressos.filter((p) => p >= 50 && p < 75).length,
+      "25-49": progressos.filter((p) => p >= 25 && p < 50).length,
+      "1-24": progressos.filter((p) => p >= 1 && p < 25).length,
+      0: students.filter((s) => !parseFloat(s.progressoCurso)).length,
+    };
 
     const notasRec = students
       .map((s) => parseFloat(s.notaProvaRec))
@@ -125,6 +146,9 @@
       faixas,
       statusCounts,
       pct,
+      progressoMedia,
+      progressoFaixas,
+      totalComProgresso: progressos.length,
       notas: {
         rec: avg(notasRec),
         front: avg(notasFront),
@@ -214,6 +238,118 @@
     "1-24": "#e85050",
     0: "#555d78",
   };
+
+  // ── Seção de Progresso por formação ─────────────────────────────────────────
+  function renderProgressoBlock(stats) {
+    if (!stats || stats.totalComProgresso === 0) return "";
+    const { progressoMedia, progressoFaixas, total } = stats;
+    const PROG_COLORS = {
+      "75-100": "#34d27c",
+      "50-74": "#5ec98a",
+      "25-49": "#f5c542",
+      "1-24": "#f97316",
+      0: "#555d78",
+    };
+    const rows = Object.entries({
+      "75–100%": "75-100",
+      "50–74%": "50-74",
+      "25–49%": "25-49",
+      "1–24%": "1-24",
+      "Sem dado": "0",
+    })
+      .map(([label, key]) => {
+        const n = progressoFaixas[key] || 0;
+        const p = total > 0 ? (n / total) * 100 : 0;
+        return `<tr>
+        <td class="rpt-faixa-label">${label}</td>
+        <td class="rpt-faixa-bar">${barHtml(p, PROG_COLORS[key])}</td>
+        <td class="rpt-faixa-pct">${p.toFixed(1)}%</td>
+        <td class="rpt-faixa-n">${n}</td></tr>`;
+      })
+      .join("");
+
+    return `
+    <div class="rpt-subsection">
+      <h3 class="rpt-sub-title">Progresso no Curso</h3>
+      <div class="rpt-highlight" style="margin-bottom:12px">
+        <span class="rpt-highlight-pct">${fmtNum(progressoMedia)}%</span>
+        <span class="rpt-highlight-text">progresso médio entre os ${stats.totalComProgresso} alunos com dado preenchido</span>
+      </div>
+      <table class="rpt-table">
+        <thead><tr><th>Faixa</th><th>Distribuição</th><th>%</th><th>Alunos</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>`;
+  }
+
+  // ── Seção Top 50 global (usada no Resumo Executivo) ──────────────────────────
+  function renderTop50Block(allData) {
+    // Monta lista de todos os alunos de todas as formações
+    const todos = GT.FORMATIONS.flatMap((f) =>
+      (allData[f.id] || []).map((s) => ({
+        ...s,
+        formacao: s.formacao || f.id,
+      })),
+    );
+    if (todos.length === 0) return "";
+
+    const rankMap = GT.calcRanking(todos);
+    if (rankMap.size === 0) return "";
+
+    // Conta medalhas por formação
+    const contagem = {};
+    GT.FORMATIONS.forEach((f) => {
+      contagem[f.id] = { ouro: 0, prata: 0, bronze: 0, total: 0 };
+    });
+    rankMap.forEach((info, _id) => {
+      const fid = todos.find((s) => s.id === _id)?.formacao;
+      if (fid && contagem[fid]) {
+        contagem[fid][info.medalha]++;
+        contagem[fid].total++;
+      }
+    });
+
+    const medalIcons = { ouro: "🥇", prata: "🥈", bronze: "🥉" };
+    const rows = GT.FORMATIONS.map((f) => {
+      const c = contagem[f.id];
+      return `<tr>
+        <td style="font-weight:600">${f.icon} ${f.label}</td>
+        <td style="text-align:center">${c.ouro > 0 ? `🥇 ${c.ouro}` : "—"}</td>
+        <td style="text-align:center">${c.prata > 0 ? `🥈 ${c.prata}` : "—"}</td>
+        <td style="text-align:center">${c.bronze > 0 ? `🥉 ${c.bronze}` : "—"}</td>
+        <td style="text-align:center;font-weight:700">${c.total}</td>
+      </tr>`;
+    }).join("");
+
+    return `
+    <div class="rpt-section rpt-top50-section">
+      <h2 class="rpt-exec-title">🏆 Top 50 — Melhores Alunos</h2>
+      <p style="font-size:13px;color:var(--text3);margin-bottom:16px">
+        Distribuição proporcional entre as formações. Critérios: nota média → presença → progresso.
+      </p>
+      <table class="rpt-table">
+        <thead>
+          <tr>
+            <th>Formação</th>
+            <th style="text-align:center">🥇 Ouro (top 10)</th>
+            <th style="text-align:center">🥈 Prata (11–25)</th>
+            <th style="text-align:center">🥉 Bronze (26–50)</th>
+            <th style="text-align:center">Total no Top 50</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        <tfoot>
+          <tr style="font-weight:700;border-top:2px solid var(--border2)">
+            <td>Total</td>
+            <td style="text-align:center">10</td>
+            <td style="text-align:center">15</td>
+            <td style="text-align:center">25</td>
+            <td style="text-align:center">50</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>`;
+  }
 
   function renderFormacao(formation, students, meta) {
     const stats = calcStats(students);
@@ -320,36 +456,12 @@
       </div>
 
       <div class="rpt-kpis">
-        <div class="rpt-kpi">
-          <div class="rpt-kpi-val">${stats.total}</div>
-          <div class="rpt-kpi-label">Inscritos</div>
-          <div class="rpt-kpi-sub">total de alunos</div>
-        </div>
-        <div class="rpt-kpi">
-          <div class="rpt-kpi-val">${stats.ativos}</div>
-          <div class="rpt-kpi-label">Participaram ao menos 1×</div>
-          <div class="rpt-kpi-sub">${pctFmt(stats.ativos / stats.total)} dos inscritos</div>
-        </div>
-        <div class="rpt-kpi rpt-kpi-warn">
-          <div class="rpt-kpi-val">${stats.inativos}</div>
-          <div class="rpt-kpi-label">Nunca compareceram</div>
-          <div class="rpt-kpi-sub">${pctFmt(stats.inativos / stats.total)} — zero presenças</div>
-        </div>
-        <div class="rpt-kpi">
-          <div class="rpt-kpi-val">${fmtNum(stats.freqMedia)}%</div>
-          <div class="rpt-kpi-label">Freq. média geral</div>
-          <div class="rpt-kpi-sub">todos os inscritos</div>
-        </div>
-        <div class="rpt-kpi">
-          <div class="rpt-kpi-val">${fmtNum(stats.freqMediaAtivos)}%</div>
-          <div class="rpt-kpi-label">Freq. média (ativos)</div>
-          <div class="rpt-kpi-sub">entre quem participou</div>
-        </div>
-        <div class="rpt-kpi rpt-kpi-ok">
-          <div class="rpt-kpi-val">${stats.comMinimo}</div>
-          <div class="rpt-kpi-label">Com ≥ 75% de presença</div>
-          <div class="rpt-kpi-sub">${pctFmt(stats.comMinimo / stats.total)} dos inscritos</div>
-        </div>
+        <div class="rpt-kpi"><div class="rpt-kpi-val">${stats.total}</div><div class="rpt-kpi-label">Inscritos</div><div class="rpt-kpi-sub">total de alunos</div></div>
+        <div class="rpt-kpi"><div class="rpt-kpi-val">${stats.ativos}</div><div class="rpt-kpi-label">Participaram ao menos 1×</div><div class="rpt-kpi-sub">${pctFmt(stats.ativos / stats.total)} dos inscritos</div></div>
+        <div class="rpt-kpi rpt-kpi-warn"><div class="rpt-kpi-val">${stats.inativos}</div><div class="rpt-kpi-label">Nunca compareceram</div><div class="rpt-kpi-sub">${pctFmt(stats.inativos / stats.total)} — zero presenças</div></div>
+        <div class="rpt-kpi"><div class="rpt-kpi-val">${fmtNum(stats.freqMedia)}%</div><div class="rpt-kpi-label">Freq. média geral</div><div class="rpt-kpi-sub">todos os inscritos</div></div>
+        <div class="rpt-kpi"><div class="rpt-kpi-val">${fmtNum(stats.freqMediaAtivos)}%</div><div class="rpt-kpi-label">Freq. média (ativos)</div><div class="rpt-kpi-sub">entre quem participou</div></div>
+        <div class="rpt-kpi rpt-kpi-ok"><div class="rpt-kpi-val">${stats.comMinimo}</div><div class="rpt-kpi-label">Com ≥ 75% de presença</div><div class="rpt-kpi-sub">${pctFmt(stats.comMinimo / stats.total)} dos inscritos</div></div>
       </div>
 
       <div class="rpt-highlight">
@@ -378,6 +490,7 @@
 
       ${notasBlock}
       ${entregasBlock}
+      ${renderProgressoBlock(stats)}
 
       <div class="rpt-subsection rpt-sugestoes">
         <h3 class="rpt-sub-title">Pontos de atenção e sugestões</h3>
@@ -418,6 +531,8 @@
       renderFormacao(f, allData[f.id] || [], meta),
     ).join("");
 
+    const top50Block = renderTop50Block(allData);
+
     container.innerHTML = `
       <div class="rpt-header">
         <div class="rpt-header-top">
@@ -426,7 +541,11 @@
             <h1 class="rpt-main-title">${meta.titulo}</h1>
             <p class="rpt-main-sub">${meta.subtitulo}</p>
           </div>
-          <button class="rpt-edit-btn" id="btnEditMeta">✏️ Editar</button>
+          <div class="rpt-header-btns">
+            <button class="rpt-edit-btn" id="btnExportRptHtml">📄 HTML</button>
+            <button class="rpt-edit-btn" id="btnExportRptEditable">✏️ Editável</button>
+            <button class="rpt-edit-btn" id="btnEditMeta">✏️ Editar</button>
+          </div>
         </div>
         <div class="rpt-header-chips">
           <span class="rpt-chip">${GT.FORMATIONS.length} turmas</span>
@@ -440,6 +559,8 @@
         <h2 class="rpt-exec-title">Resumo Executivo</h2>
         ${renderExecSummary(allData)}
       </div>
+
+      ${top50Block}
 
       ${secoes}
 
@@ -455,6 +576,74 @@
     document
       .getElementById("btnEditMeta")
       ?.addEventListener("click", () => openMetaModal(meta));
+
+    // ── Exportar HTML estático (colorido) ──────────────────────────────────
+    document
+      .getElementById("btnExportRptHtml")
+      ?.addEventListener("click", () => {
+        const content = document.getElementById("reportContent").innerHTML;
+        const styles = [...document.styleSheets]
+          .map((ss) => {
+            try {
+              return [...ss.cssRules].map((r) => r.cssText).join("\n");
+            } catch {
+              return "";
+            }
+          })
+          .join("\n");
+        const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+        <title>${meta.titulo}</title>
+        <style>
+          body{font-family:Arial,sans-serif;background:#fff;color:#111;padding:24px}
+          ${styles}
+          :root{--bg1:#fff;--bg2:#f4f4f4;--bg3:#eee;--text1:#111;--text2:#333;--text3:#666;--border:#ccc;--border2:#bbb;--border3:#aaa;--accent:#2563eb}
+        </style>
+      </head><body>${content}</body></html>`;
+        _download(html, `GeracaoTech_Relatorio.html`, "text/html");
+        toast("Relatório HTML exportado!", "success");
+      });
+
+    // ── Exportar HTML editável ──────────────────────────────────────────────
+    document
+      .getElementById("btnExportRptEditable")
+      ?.addEventListener("click", () => {
+        const content = document.getElementById("reportContent").innerHTML;
+        const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="UTF-8">
+        <title>${meta.titulo} — Editável</title>
+        <style>
+          body{font-family:Arial,sans-serif;background:#fff;color:#111;padding:32px;max-width:900px;margin:0 auto}
+          h1,h2,h3{margin-bottom:8px} table{border-collapse:collapse;width:100%}
+          th,td{border:1px solid #ccc;padding:6px 10px;text-align:left}
+          th{background:#e8eaf6} [contenteditable]{outline:2px dashed #2563eb;outline-offset:2px;border-radius:2px}
+          .rpt-bar-wrap{background:#eee;border-radius:4px;height:8px;overflow:hidden}
+          .rpt-bar{height:8px;border-radius:4px}
+          .rpt-edit-btn,.rpt-header-btns{display:none}
+        </style>
+      </head><body>
+        <p style="background:#fef9c3;border:1px solid #fde68a;padding:10px 14px;border-radius:6px;font-size:13px;margin-bottom:20px">
+          ✏️ <strong>Modo editável:</strong> Clique em qualquer texto para editar diretamente. Use Ctrl+P para imprimir ou salvar como PDF.
+        </p>
+        <div id="rpt-editable">${content}</div>
+        <script>
+          document.querySelectorAll('h1,h2,h3,p,td,li,.rpt-obs-text,.rpt-kpi-val,.rpt-highlight-pct').forEach(el => {
+            el.setAttribute('contenteditable','true');
+          });
+          document.querySelectorAll('button').forEach(b => b.style.display='none');
+        <\/script>
+      </body></html>`;
+        _download(html, `GeracaoTech_Relatorio_Editavel.html`, "text/html");
+        toast("Relatório editável exportado!", "success");
+      });
+  }
+
+  function _download(content, filename, type) {
+    const blob = new Blob([content], { type: `${type};charset=utf-8` });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   function renderExecSummary(allData) {
@@ -462,6 +651,8 @@
       totalAtivos = 0,
       totalMinimo = 0,
       totalAprovados = 0;
+    let totalComProgresso = 0,
+      somaProgresso = 0;
     GT.FORMATIONS.forEach((f) => {
       const stats = calcStats(allData[f.id] || []);
       if (!stats) return;
@@ -469,9 +660,17 @@
       totalAtivos += stats.ativos;
       totalMinimo += stats.comMinimo;
       totalAprovados += stats.statusCounts["aprovado"] || 0;
+      if (stats.progressoMedia != null) {
+        somaProgresso += stats.progressoMedia * stats.totalComProgresso;
+        totalComProgresso += stats.totalComProgresso;
+      }
     });
     if (totalAlunos === 0)
       return `<p style="color:var(--text3)">Nenhum dado disponível.</p>`;
+
+    const progressoGeralMedia =
+      totalComProgresso > 0 ? somaProgresso / totalComProgresso : null;
+
     return `
     <div class="rpt-exec-grid">
       <div class="rpt-exec-card">
@@ -493,6 +692,16 @@
         <div class="rpt-exec-label">Certificados de Conclusão</div>
         <div class="rpt-exec-sub">${pctFmt(totalAprovados / totalAlunos)} dos inscritos</div>
       </div>
+      ${
+        progressoGeralMedia != null
+          ? `
+      <div class="rpt-exec-card">
+        <div class="rpt-exec-val">${fmtNum(progressoGeralMedia)}%</div>
+        <div class="rpt-exec-label">Progresso médio geral</div>
+        <div class="rpt-exec-sub">entre ${totalComProgresso.toLocaleString("pt-BR")} alunos com dado</div>
+      </div>`
+          : ""
+      }
     </div>`;
   }
 
