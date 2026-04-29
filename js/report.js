@@ -576,68 +576,81 @@
     document
       .getElementById("btnEditMeta")
       ?.addEventListener("click", () => openMetaModal(meta));
-
+    function buildPrintHtml(content, meta) {
+      return `<!DOCTYPE html><html lang="pt-BR"><head>
+    <meta charset="UTF-8"><title>${meta.titulo}</title>
+    <style>
+      *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}
+      body{font-family:Arial,sans-serif;background:#fff;color:#111;padding:24px;margin:0}
+      h1,h2,h3{margin-bottom:8px}
+      table{border-collapse:collapse;width:100%;margin-bottom:12px}
+      th,td{border:1px solid #ccc;padding:6px 10px;text-align:left;font-size:12px}
+      th{background:#e8eaf6}
+      .rpt-bar-wrap{background:#eee;border-radius:4px;height:8px;overflow:hidden}
+      .rpt-bar{height:8px;border-radius:4px}
+      .rpt-header{background:#f4f6fb;border:1px solid #dde;border-radius:12px;padding:20px 24px 16px;margin-bottom:20px}
+      .rpt-header-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+      .rpt-logo-mark{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#2563eb,#7b4fff);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;flex-shrink:0}
+      .rpt-main-title{font-size:18px;font-weight:800;color:#111}
+      .rpt-main-sub{font-size:12px;color:#666;margin-top:2px}
+      .rpt-header-chips{display:flex;flex-wrap:wrap;gap:6px}
+      .rpt-chip{background:#eee;border:1px solid #ddd;border-radius:20px;padding:2px 9px;font-size:11px;color:#555}
+      .rpt-exec-summary,.rpt-section{background:#f9f9fb;border:1px solid #dde;border-radius:10px;padding:18px 20px;margin-bottom:16px;page-break-inside:avoid}
+      .rpt-exec-title,.rpt-section-title{font-size:15px;font-weight:700;margin-bottom:12px;color:#111}
+      .rpt-exec-grid,.rpt-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
+      .rpt-exec-card,.rpt-kpi{background:#fff;border:1px solid #dde;border-radius:8px;padding:12px 14px}
+      .rpt-exec-val,.rpt-kpi-val{font-size:22px;font-weight:800;color:#2563eb}
+      .rpt-exec-label,.rpt-kpi-label{font-size:12px;color:#444;font-weight:600;margin-top:2px}
+      .rpt-exec-sub,.rpt-kpi-sub{font-size:11px;color:#888;margin-top:2px}
+      .rpt-exec-ok .rpt-exec-val,.rpt-kpi-ok .rpt-kpi-val{color:#16a34a}
+      .rpt-exec-green .rpt-exec-val{color:#16a34a}
+      .rpt-kpi-warn .rpt-kpi-val{color:#dc2626}
+      .rpt-highlight{background:#eff6ff;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px}
+      .rpt-highlight-pct{font-size:28px;font-weight:800;color:#2563eb;flex-shrink:0}
+      .rpt-highlight-text{font-size:13px;color:#444}
+      .rpt-subsection{margin-bottom:16px}
+      .rpt-sub-title{font-size:13px;font-weight:700;color:#333;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em}
+      .rpt-faixa-label{font-size:12px;color:#555;width:80px}
+      .rpt-faixa-pct{font-size:12px;color:#333;width:50px;text-align:right}
+      .rpt-faixa-n{font-size:12px;font-weight:600;width:50px;text-align:right}
+      .rpt-notas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+      .rpt-nota-card{background:#fff;border:1px solid #dde;border-radius:8px;padding:10px;text-align:center}
+      .rpt-nota-val{font-size:20px;font-weight:700;color:#2563eb}
+      .rpt-nota-label{font-size:11px;color:#666;margin-top:2px}
+      .rpt-entregas-grid{display:flex;flex-direction:column;gap:6px}
+      .rpt-entrega-item{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #eee}
+      .rpt-sug-list{padding-left:16px}
+      .rpt-sug-item{font-size:12px;color:#444;margin-bottom:6px;line-height:1.5}
+      .rpt-section-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+      .rpt-section-icon{width:36px;height:36px;border-radius:8px;background:#e8eaf6;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+      .rpt-section-meta{font-size:12px;color:#666;margin-top:2px}
+      .rpt-footer{text-align:center;font-size:11px;color:#999;margin-top:24px;padding-top:12px;border-top:1px solid #eee}
+      .status-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
+      .status-badge.aprovado{background:#d1fae5;color:#065f46}
+      .status-badge.participacao{background:#dbeafe;color:#1e3a8a}
+      .status-badge.vinculacao{background:#ede9fe;color:#4c1d95}
+      .status-badge.reprovado-falta{background:#fee2e2;color:#7f1d1d}
+      .rpt-top50-section{background:#f9f9fb;border:1px solid #dde;border-radius:10px;padding:18px 20px;margin-bottom:16px}
+      .rpt-header-btns,button{display:none!important}
+    </style>
+  </head><body>${content}</body></html>`;
+    }
     document.addEventListener("gt:printReport", () => {
       const content = document.getElementById("reportContent").innerHTML;
       const win = window.open("", "_blank");
-      win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head>
-          <meta charset="UTF-8">
-          <title>${meta.titulo}</title>
-          <style>
-            *{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;box-sizing:border-box}
-            body{font-family:Arial,sans-serif;background:#fff;color:#111;padding:24px;margin:0}
-            h1,h2,h3{margin-bottom:8px}
-            table{border-collapse:collapse;width:100%;margin-bottom:12px}
-            th,td{border:1px solid #ccc;padding:6px 10px;text-align:left;font-size:12px}
-            th{background:#e8eaf6}
-            .rpt-bar-wrap{background:#eee;border-radius:4px;height:8px;overflow:hidden}
-            .rpt-bar{height:8px;border-radius:4px}
-            .rpt-header{background:#f4f6fb;border:1px solid #dde;border-radius:12px;padding:20px 24px 16px;margin-bottom:20px}
-            .rpt-header-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
-            .rpt-logo-mark{width:40px;height:40px;border-radius:8px;background:linear-gradient(135deg,#2563eb,#7b4fff);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;flex-shrink:0}
-            .rpt-main-title{font-size:18px;font-weight:800;color:#111}
-            .rpt-main-sub{font-size:12px;color:#666;margin-top:2px}
-            .rpt-header-chips{display:flex;flex-wrap:wrap;gap:6px}
-            .rpt-chip{background:#eee;border:1px solid #ddd;border-radius:20px;padding:2px 9px;font-size:11px;color:#555}
-            .rpt-exec-summary,.rpt-section{background:#f9f9fb;border:1px solid #dde;border-radius:10px;padding:18px 20px;margin-bottom:16px;page-break-inside:avoid}
-            .rpt-exec-title,.rpt-section-title{font-size:15px;font-weight:700;margin-bottom:12px;color:#111}
-            .rpt-exec-grid,.rpt-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:12px}
-            .rpt-exec-card,.rpt-kpi{background:#fff;border:1px solid #dde;border-radius:8px;padding:12px 14px}
-            .rpt-exec-val,.rpt-kpi-val{font-size:22px;font-weight:800;color:#2563eb}
-            .rpt-exec-label,.rpt-kpi-label{font-size:12px;color:#444;font-weight:600;margin-top:2px}
-            .rpt-exec-sub,.rpt-kpi-sub{font-size:11px;color:#888;margin-top:2px}
-            .rpt-exec-ok .rpt-exec-val,.rpt-kpi-ok .rpt-kpi-val{color:#16a34a}
-            .rpt-exec-green .rpt-exec-val{color:#16a34a}
-            .rpt-kpi-warn .rpt-kpi-val{color:#dc2626}
-            .rpt-highlight{background:#eff6ff;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:12px}
-            .rpt-highlight-pct{font-size:28px;font-weight:800;color:#2563eb;flex-shrink:0}
-            .rpt-highlight-text{font-size:13px;color:#444}
-            .rpt-subsection{margin-bottom:16px}
-            .rpt-sub-title{font-size:13px;font-weight:700;color:#333;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.04em}
-            .rpt-faixa-label{font-size:12px;color:#555;width:80px}
-            .rpt-faixa-pct{font-size:12px;color:#333;width:50px;text-align:right}
-            .rpt-faixa-n{font-size:12px;font-weight:600;width:50px;text-align:right}
-            .rpt-notas-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-            .rpt-nota-card{background:#fff;border:1px solid #dde;border-radius:8px;padding:10px;text-align:center}
-            .rpt-nota-val{font-size:20px;font-weight:700;color:#2563eb}
-            .rpt-nota-label{font-size:11px;color:#666;margin-top:2px}
-            .rpt-entregas-grid{display:flex;flex-direction:column;gap:6px}
-            .rpt-entrega-item{display:flex;justify-content:space-between;font-size:12px;padding:6px 0;border-bottom:1px solid #eee}
-            .rpt-sug-list{padding-left:16px}
-            .rpt-sug-item{font-size:12px;color:#444;margin-bottom:6px;line-height:1.5}
-            .rpt-section-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
-            .rpt-section-icon{width:36px;height:36px;border-radius:8px;background:#e8eaf6;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
-            .rpt-section-meta{font-size:12px;color:#666;margin-top:2px}
-            .rpt-footer{text-align:center;font-size:11px;color:#999;margin-top:24px;padding-top:12px;border-top:1px solid #eee}
-            .status-badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:600}
-            .status-badge.aprovado{background:#d1fae5;color:#065f46}
-            .status-badge.participacao{background:#dbeafe;color:#1e3a8a}
-            .status-badge.vinculacao{background:#ede9fe;color:#4c1d95}
-            .status-badge.reprovado-falta{background:#fee2e2;color:#7f1d1d}
-            .rpt-top50-section{background:#f9f9fb;border:1px solid #dde;border-radius:10px;padding:18px 20px;margin-bottom:16px}
-            .rpt-header-btns,button{display:none!important}
-          </style>
-        </head><body>${content}</body></html>`);
+      if (!win) {
+        // Popup bloqueado — fallback: criar blob URL e navegar
+        const html = buildPrintHtml(content, meta);
+        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.target = "_blank";
+        a.click();
+        setTimeout(() => URL.revokeObjectURL(url), 5000);
+        return;
+      }
+      win.document.write(buildPrintHtml(content, meta));
       win.document.close();
       win.focus();
       setTimeout(() => {
