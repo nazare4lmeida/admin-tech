@@ -85,14 +85,6 @@
         "Entregou – Reprovado",
       ],
     },
-    {
-      key: "progressoCurso",
-      label: "Progresso (%)",
-      type: "number",
-      min: 0,
-      max: 100,
-      step: 0.1,
-    },
   ];
 
   const EXTRA_FIELDS = {
@@ -135,6 +127,14 @@
         max: 10,
         step: 0.1,
       },
+      {
+        key: "progressoCurso",
+        label: "Progresso (%)",
+        type: "number",
+        min: 0,
+        max: 100,
+        step: 0.1,
+      },
     ],
     "ia-generativa": [
       {
@@ -145,6 +145,14 @@
         max: 10,
         step: 0.1,
       },
+      {
+        key: "progressoCurso",
+        label: "Progresso (%)",
+        type: "number",
+        min: 0,
+        max: 100,
+        step: 0.1,
+      },
     ],
     "ia-soft-skills": [
       {
@@ -153,6 +161,14 @@
         type: "number",
         min: 0,
         max: 10,
+        step: 0.1,
+      },
+      {
+        key: "progressoCurso",
+        label: "Progresso (%)",
+        type: "number",
+        min: 0,
+        max: 100,
         step: 0.1,
       },
     ],
@@ -255,7 +271,6 @@
     // 7. Nenhuma condição de aprovação — vinculação
     return { key: "vinculacao", label: "Certificado de Vinculação" };
   }
-
 
   // ============================================================
   // NAME UTILITIES
