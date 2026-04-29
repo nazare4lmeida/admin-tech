@@ -577,7 +577,7 @@
       .getElementById("btnEditMeta")
       ?.addEventListener("click", () => openMetaModal(meta));
 
-    document.getElementById("btnPrintReport")?.addEventListener("click", () => {
+    document.addEventListener("gt:printReport", () => {
       const content = document.getElementById("reportContent").innerHTML;
       const win = window.open("", "_blank");
       win.document.write(`<!DOCTYPE html><html lang="pt-BR"><head>

@@ -138,7 +138,10 @@
   document.getElementById("btnReport").addEventListener("click", showReportView);
   document.getElementById("btnRefreshReport")?.addEventListener("click", () => Report.render());
   document.getElementById("menuBtnReport")?.addEventListener("click", openSidebar);
-  document.getElementById("btnPrintReport")?.addEventListener("click", () => window.print());
+ document.getElementById("btnPrintReport")?.addEventListener("click", () => {
+  // Delegado ao report.js via evento customizado
+  document.dispatchEvent(new CustomEvent("gt:printReport"));
+});
 
   // ============================================================
   // SIDEBAR
