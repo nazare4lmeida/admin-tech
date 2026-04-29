@@ -1612,9 +1612,10 @@ tr:has(.row-checkbox:checked) {
 }
 .rpt-header-top {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 16px;
   margin-bottom: 14px;
+  flex-wrap: wrap;
 }
 .rpt-logo-mark {
   width: 44px;
@@ -2020,9 +2021,16 @@ tr:has(.row-checkbox:checked) {
 }
 
 @media print {
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
   .sidebar,
   .report-topbar,
   .rpt-edit-btn,
+  .rpt-header-btns,
   .btn-print-report,
   .btn-refresh-report,
   .fill-assistant-bar,
@@ -2031,21 +2039,37 @@ tr:has(.row-checkbox:checked) {
   .toast-container {
     display: none !important;
   }
-  .report-view {
-    display: block !important;
+  html,
+  body {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+    color: #000 !important;
   }
-  .report-scroll {
-    padding: 0;
-    overflow: visible;
+  .main-content,
+  .content-area,
+  .report-view,
+  .report-scroll,
+  #reportContent {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    flex: none !important;
+    padding: 0 !important;
   }
   .rpt-section {
     break-inside: avoid;
-    box-shadow: none;
-    border: 1px solid #ccc;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    margin-bottom: 16px !important;
   }
-  body {
-    background: #fff !important;
-    color: #000 !important;
+  .rpt-kpis {
+    grid-template-columns: repeat(3, 1fr) !important;
   }
 }
 
@@ -2088,7 +2112,10 @@ tr:has(.row-checkbox:checked) {
   font-weight: 500;
   color: var(--text2);
   cursor: pointer;
-  transition: background 0.15s, color 0.15s, border-color 0.15s;
+  transition:
+    background 0.15s,
+    color 0.15s,
+    border-color 0.15s;
   font-family: var(--font);
 }
 
@@ -2283,19 +2310,19 @@ tr:has(.row-checkbox:checked) {
 }
 
 [data-theme="light"] .medal-badge.medal-ouro {
-  background: rgba(161, 120, 0, 0.10);
+  background: rgba(161, 120, 0, 0.1);
   border-color: rgba(161, 120, 0, 0.28);
   color: #92620a;
 }
 
 [data-theme="light"] .medal-badge.medal-prata {
-  background: rgba(100, 116, 139, 0.10);
+  background: rgba(100, 116, 139, 0.1);
   border-color: rgba(100, 116, 139, 0.28);
   color: #475569;
 }
 
 [data-theme="light"] .medal-badge.medal-bronze {
-  background: rgba(140, 80, 20, 0.10);
+  background: rgba(140, 80, 20, 0.1);
   border-color: rgba(140, 80, 20, 0.28);
   color: #7c4a1a;
 }
@@ -2354,9 +2381,16 @@ tr:has(.row-checkbox:checked) {
 /* Botões de exportação no cabeçalho do relatório */
 .rpt-header-btns {
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-wrap: wrap;
   align-items: center;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+.rpt-header-btns .rpt-edit-btn {
+  font-size: 12px;
+  padding: 6px 11px;
 }
 
 /* Seção Top 50 */
@@ -2370,11 +2404,108 @@ tr:has(.row-checkbox:checked) {
 
 /* Correção de impressão PDF — imprime todas as páginas completas */
 @media print {
-  * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-  body { background: #fff !important; color: #000 !important; padding: 0 !important; }
-  .report-topbar, .rpt-edit-btn, .rpt-header-btns, button { display: none !important; }
-  .report-scroll { overflow: visible !important; height: auto !important; max-height: none !important; }
-  .rpt-section { break-inside: avoid; page-break-inside: avoid; box-shadow: none !important; border: 1px solid #ccc !important; }
-  .rpt-bar { -webkit-print-color-adjust: exact !important; }
-  #reportContent { overflow: visible !important; height: auto !important; }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  html,
+  body {
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    background: #fff !important;
+    color: #000 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .sidebar,
+  .topbar,
+  .report-topbar,
+  .fill-assistant-bar,
+  .bulk-delete-bar,
+  .toast-container,
+  .rpt-edit-btn,
+  .rpt-header-btns,
+  button {
+    display: none !important;
+  }
+  /* Todos os containers pai precisam expandir */
+  .app-layout,
+  .main-content,
+  .content-area,
+  .content-wrap,
+  .report-view,
+  .report-scroll,
+  #reportContent {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+    flex: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .rpt-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+    margin-bottom: 16px !important;
+  }
+  .rpt-bar {
+    -webkit-print-color-adjust: exact !important;
+  }
+  .rpt-kpis {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+}
+
+/* ================================================================
+   MODAL DE EDIÇÃO DO RELATÓRIO — inputs e selects estilizados
+   ================================================================ */
+.rpt-meta-group input[type="text"],
+.rpt-meta-group select,
+#metaTitulo,
+#metaSubtitulo,
+#metaOrgao,
+#metaObs {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 8px 11px;
+  font-size: 13px;
+  font-family: var(--font);
+  color: var(--text1);
+  outline: none;
+  transition:
+    border-color 0.15s,
+    box-shadow 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.rpt-meta-group input[type="text"]:focus,
+.rpt-meta-group select:focus,
+#metaTitulo:focus,
+#metaSubtitulo:focus,
+#metaOrgao:focus,
+#metaObs:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(74, 125, 245, 0.15);
+}
+
+.rpt-meta-group input[type="text"]::placeholder {
+  color: var(--text3);
+}
+
+.rpt-meta-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
+  cursor: pointer;
 }
