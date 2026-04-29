@@ -93,14 +93,6 @@
       max: 100,
       step: 0.1,
     },
-    {
-      key: "notaProjetoFinal",
-      label: "Nota Final",
-      type: "number",
-      min: 0,
-      max: 10,
-      step: 0.1,
-    },
   ];
 
   const EXTRA_FIELDS = {
@@ -471,7 +463,7 @@
           student.projetoFinal === "Entregou – Reprovado")
       )
         notas.push(nfinal);
-      if (notas.length === 0) return null;
+      if (notas.length < 2) return null;
       return notas.reduce((a, b) => a + b, 0) / notas.length;
     } else {
       const n = parseFloat(student.notaProjetoFinal);
