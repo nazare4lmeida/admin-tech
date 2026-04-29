@@ -20,14 +20,14 @@
       label: "IA Generativa",
       icon: "🤖",
       color: "#a855f7",
-      extra: [],
+      extra: ["ia-generativa"],
     },
     {
       id: "ia-soft-skills",
       label: "IA + Soft Skills",
       icon: "🧠",
       color: "#22c55e",
-      extra: [],
+      extra: ["ia-soft-skills"],
     },
   ];
 
@@ -136,6 +136,26 @@
         step: 0.1,
       },
     ],
+    "ia-generativa": [
+      {
+        key: "notaProjetoFinal",
+        label: "Nota Proj. Final",
+        type: "number",
+        min: 0,
+        max: 10,
+        step: 0.1,
+      },
+    ],
+    "ia-soft-skills": [
+      {
+        key: "notaProjetoFinal",
+        label: "Nota Proj. Final",
+        type: "number",
+        min: 0,
+        max: 10,
+        step: 0.1,
+      },
+    ],
   };
 
   // ============================================================
@@ -188,6 +208,7 @@
     }
 
     // 5. Cálculo real de projeto
+    const presencaOk = parseFloat(student.presencaFinalPlat || 0) >= 75;
     let projectApproved = false;
     if (student.formacao === "fullstack") {
       const frontOk =
@@ -201,9 +222,24 @@
         parseFloat(student.notaProjetoFinal || 0) >= 7;
       projectApproved = (frontOk && backOk) || finalOk;
     } else {
-      projectApproved =
+      // IA Generativa e IA + Soft Skills
+      const projetoOk =
         student.projetoFinal === "Entregou – Aprovado" &&
         parseFloat(student.notaProjetoFinal || 0) >= 7;
+      const recOk =
+        student.provaRecuperacao === "Fez – Aprovado" &&
+        parseFloat(student.notaProvaRec || 0) >= 6;
+
+      // Conclusão: presença >= 75% + projeto aprovado (com ou sem prova)
+      if (presencaOk && projetoOk)
+        return { key: "aprovado", label: "Certificado de Conclusão" };
+
+      // Participação: presença >= 75% + prova aprovada (mesmo sem projeto)
+      if (presencaOk && recOk)
+        return { key: "participacao", label: "Certificado de Participação" };
+
+      // Nenhum critério atingido
+      return { key: "vinculacao", label: "Certificado de Vinculação" };
     }
 
     if (projectApproved)
@@ -219,6 +255,7 @@
     // 7. Nenhuma condição de aprovação — vinculação
     return { key: "vinculacao", label: "Certificado de Vinculação" };
   }
+
 
   // ============================================================
   // NAME UTILITIES
