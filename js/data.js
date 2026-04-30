@@ -591,6 +591,14 @@
   function calcNotaMedia(student) {
     const formacao = student.formacao || "";
 
+    if (formacao.startsWith("presencial") || formacao.startsWith("turma_")) {
+      const nota = parseFloat(student.notaProjetoFinal);
+      const freq = parseFloat(student.presencaFinalPlat || 0);
+      const prog = parseFloat(student.progressoCurso || 0);
+      if (nota !== 10 || freq < 80 || prog < 80) return null;
+      return nota;
+    }
+
     // Se tem notaProjetoFinal preenchida, usa direto (vale para todas as formações)
     const nFinal = parseFloat(student.notaProjetoFinal);
     if (!isNaN(nFinal) && nFinal > 0) return nFinal;
