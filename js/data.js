@@ -571,9 +571,34 @@
   // Para outras: notaProjetoFinal
   // ============================================================
   function calcNotaMedia(student) {
-    const n = parseFloat(student.notaProjetoFinal);
-    if (isNaN(n) || n === 0) return null;
-    return n;
+    const formacao = student.formacao || "";
+
+    // Se tem notaProjetoFinal preenchida, usa direto (vale para todas as formações)
+    const nFinal = parseFloat(student.notaProjetoFinal);
+    if (!isNaN(nFinal) && nFinal > 0) return nFinal;
+
+    // Fullstack sem notaProjetoFinal: calcula média de front + back
+    if (formacao === "fullstack") {
+      const nf = parseFloat(student.notaFront);
+      const nb = parseFloat(student.notaBack);
+      const notas = [];
+      if (
+        !isNaN(nf) &&
+        (student.projetoFront === "Entregou – Aprovado" ||
+          student.projetoFront === "Entregou – Reprovado")
+      )
+        notas.push(nf);
+      if (
+        !isNaN(nb) &&
+        (student.projetoBack === "Entregou – Aprovado" ||
+          student.projetoBack === "Entregou – Reprovado")
+      )
+        notas.push(nb);
+      if (notas.length < 2) return null;
+      return notas.reduce((a, b) => a + b, 0) / notas.length;
+    }
+
+    return null;
   }
 
   // ============================================================
