@@ -614,31 +614,32 @@
     // Vagas fixas por medalha e formação
     // Vagas proporcionais ao número de elegíveis por formação
     const TOTAIS_MEDALHA = { ouro: 10, prata: 15, bronze: 25 };
-    const totalElegiveis = {};
+
+    // Conta total de alunos por formação na lista recebida
+    const totalPorFormacao = {};
     GT.FORMATIONS.forEach((f) => {
-      totalElegiveis[f.id] = 0;
+      totalPorFormacao[f.id] = 0;
     });
-    students
-      .map((s) => ({ ...s, _mediaTemp: calcNotaMedia(s) }))
-      .filter((s) => s._mediaTemp !== null)
-      .forEach((s) => {
-        if (totalElegiveis[s.formacao] !== undefined)
-          totalElegiveis[s.formacao]++;
-      });
+    students.forEach((s) => {
+      if (totalPorFormacao[s.formacao] !== undefined)
+        totalPorFormacao[s.formacao]++;
+    });
     const grandTotal =
-      Object.values(totalElegiveis).reduce((a, b) => a + b, 0) || 1;
+      Object.values(totalPorFormacao).reduce((a, b) => a + b, 0) || 1;
 
     function calcVagas(total) {
       const raw = {};
       let soma = 0;
       GT.FORMATIONS.forEach((f) => {
-        raw[f.id] = Math.round((totalElegiveis[f.id] / grandTotal) * total);
+        raw[f.id] = Math.round((totalPorFormacao[f.id] / grandTotal) * total);
         soma += raw[f.id];
       });
       const diff = total - soma;
       if (diff !== 0) {
         const maior = GT.FORMATIONS.reduce((a, b) =>
-          (totalElegiveis[a.id] || 0) >= (totalElegiveis[b.id] || 0) ? a : b,
+          (totalPorFormacao[a.id] || 0) >= (totalPorFormacao[b.id] || 0)
+            ? a
+            : b,
         );
         raw[maior.id] = (raw[maior.id] || 0) + diff;
       }
