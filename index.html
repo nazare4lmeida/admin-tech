@@ -121,18 +121,29 @@
 
         <nav class="sidebar-nav">
           <div class="nav-label">Formações</div>
-          <button class="nav-item active" data-formation="fullstack">
-            <span class="nav-icon">⚡</span><span>Fullstack</span>
-            <span class="nav-badge" id="badge-fullstack">0</span>
-          </button>
-          <button class="nav-item" data-formation="ia-generativa">
-            <span class="nav-icon">🤖</span><span>IA Generativa</span>
-            <span class="nav-badge" id="badge-ia-generativa">0</span>
-          </button>
-          <button class="nav-item" data-formation="ia-soft-skills">
-            <span class="nav-icon">🧠</span><span>IA + Soft Skills</span>
-            <span class="nav-badge" id="badge-ia-soft-skills">0</span>
-          </button>
+          <div id="formationNav">
+            <!-- Rendered dynamically by app.js renderSidebarFormations() -->
+            <button class="nav-item active" data-formation="fullstack">
+              <span class="nav-icon">⚡</span><span>Fullstack</span>
+              <span class="nav-badge" id="badge-fullstack">0</span>
+            </button>
+            <button class="nav-item" data-formation="ia-generativa">
+              <span class="nav-icon">🤖</span><span>IA Generativa</span>
+              <span class="nav-badge" id="badge-ia-generativa">0</span>
+            </button>
+            <button class="nav-item" data-formation="ia-soft-skills">
+              <span class="nav-icon">🧠</span><span>IA + Soft Skills</span>
+              <span class="nav-badge" id="badge-ia-soft-skills">0</span>
+            </button>
+            <button class="nav-item" data-formation="presencial-ia-gen">
+              <span class="nav-icon">🏫</span><span>Presencial IA Gen</span>
+              <span class="nav-badge" id="badge-presencial-ia-gen">0</span>
+            </button>
+            <button class="nav-item" data-formation="presencial-ia-soft">
+              <span class="nav-icon">🏫</span><span>Presencial IA Soft</span>
+              <span class="nav-badge" id="badge-presencial-ia-soft">0</span>
+            </button>
+          </div>
         </nav>
 
         <div class="sidebar-actions">
@@ -149,6 +160,9 @@
           <!-- NOVO: botão relatório -->
           <button class="nav-item" id="btnReport">
             <span class="nav-icon">📊</span><span>Relatório</span>
+          </button>
+          <button class="nav-item" id="btnNewFormation">
+            <span class="nav-icon">➕</span><span>Nova Turma</span>
           </button>
         </div>
 

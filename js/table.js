@@ -60,6 +60,24 @@
   // HEADERS  (só na visão expandida)
   // ============================================================
   function buildHeaders(formation) {
+    // Presencial formations: minimal headers
+    if (formation.presencial) {
+      const head = document.getElementById("tableHead");
+      head.innerHTML = `<tr>
+        <th style="width:32px"></th>
+        <th style="width:36px">#</th>
+        <th style="min-width:170px">Nome do Aluno</th>
+        <th>Sede</th>
+        <th>Frequência (%)</th>
+        <th>Nota Final</th>
+        <th>Progresso (%)</th>
+        <th style="min-width:160px">Nota Final (média)</th>
+        <th style="width:90px">Medalha</th>
+        <th style="min-width:180px">Status Final</th>
+        <th style="width:36px"></th>
+      </tr>`;
+      return;
+    }
     const head = document.getElementById("tableHead");
     const tr   = document.createElement("tr");
 

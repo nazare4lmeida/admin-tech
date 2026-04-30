@@ -7,7 +7,8 @@
 
   const STORAGE_KEY = "gt_students_v2";
 
-  const FORMATIONS = [
+  // Formações base (sempre presentes)
+  const BASE_FORMATIONS = [
     {
       id: "fullstack",
       label: "Fullstack",
@@ -29,7 +30,54 @@
       color: "#22c55e",
       extra: ["ia-soft-skills"],
     },
+    {
+      id: "presencial-ia-gen",
+      label: "Presencial IA Gen",
+      icon: "🏫",
+      color: "#f59e0b",
+      extra: ["presencial"],
+      presencial: true,
+    },
+    {
+      id: "presencial-ia-soft",
+      label: "Presencial IA Soft",
+      icon: "🏫",
+      color: "#10b981",
+      extra: ["presencial"],
+      presencial: true,
+    },
   ];
+
+  // Lista dinâmica — inclui turmas customizadas carregadas do Supabase
+  let FORMATIONS = [...BASE_FORMATIONS];
+
+  async function loadDynamicFormations() {
+    if (!(window.SB && SB.enabled())) return;
+    try {
+      const turmas = await SB.getTurmasCustomizadas();
+      const extras = turmas.map(t => ({
+        id: t.id,
+        label: t.label,
+        icon: t.icon || "📚",
+        color: t.color || "#6366f1",
+        extra: ["presencial"],
+        presencial: true,
+        dynamic: true,
+        tableName: t.table_name,
+      }));
+      FORMATIONS = [...BASE_FORMATIONS, ...extras];
+    } catch (e) {
+      console.warn("Erro ao carregar turmas customizadas:", e);
+    }
+  }
+
+  async function createDynamicFormation({ label, icon, color }) {
+    const id = "turma_" + Date.now();
+    const tableName = "alunos_" + id.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+    await SB.createTurmaCustomizada({ id, label, icon, color, tableName });
+    await loadDynamicFormations();
+    return id;
+  }
 
   const UNIVERSAL_FIELDS = [
     {
@@ -158,6 +206,38 @@
       {
         key: "notaProjetoFinal",
         label: "Nota Proj. Final",
+        type: "number",
+        min: 0,
+        max: 10,
+        step: 0.1,
+      },
+      {
+        key: "progressoCurso",
+        label: "Progresso (%)",
+        type: "number",
+        min: 0,
+        max: 100,
+        step: 0.1,
+      },
+    ],
+    presencial: [
+      {
+        key: "sede",
+        label: "Sede",
+        type: "select",
+        options: ["", "Aldeota", "Bezerra", "Sul"],
+      },
+      {
+        key: "presencaFinalPlat",
+        label: "Frequência (%)",
+        type: "number",
+        min: 0,
+        max: 100,
+        step: 1,
+      },
+      {
+        key: "notaProjetoFinal",
+        label: "Nota Final",
         type: "number",
         min: 0,
         max: 10,
@@ -535,10 +615,37 @@
   // ============================================================
   function calcRanking(students) {
     // Vagas fixas por medalha e formação
+    // Vagas proporcionais ao número de elegíveis por formação
+    const TOTAIS_MEDALHA = { ouro: 10, prata: 15, bronze: 25 };
+    const totalElegiveis = {};
+    GT.FORMATIONS.forEach(f => { totalElegiveis[f.id] = 0; });
+    students
+      .map(s => ({ ...s, _mediaTemp: calcNotaMedia(s) }))
+      .filter(s => s._mediaTemp !== null)
+      .forEach(s => { if (totalElegiveis[s.formacao] !== undefined) totalElegiveis[s.formacao]++; });
+    const grandTotal = Object.values(totalElegiveis).reduce((a,b)=>a+b,0) || 1;
+
+    function calcVagas(total) {
+      const raw = {};
+      let soma = 0;
+      GT.FORMATIONS.forEach(f => {
+        raw[f.id] = Math.round((totalElegiveis[f.id] / grandTotal) * total);
+        soma += raw[f.id];
+      });
+      const diff = total - soma;
+      if (diff !== 0) {
+        const maior = GT.FORMATIONS.reduce((a,b) =>
+          (totalElegiveis[a.id] || 0) >= (totalElegiveis[b.id] || 0) ? a : b
+        );
+        raw[maior.id] = (raw[maior.id] || 0) + diff;
+      }
+      return raw;
+    }
+
     const VAGAS = {
-      ouro: { fullstack: 5, "ia-generativa": 3, "ia-soft-skills": 2 },
-      prata: { fullstack: 7, "ia-generativa": 5, "ia-soft-skills": 3 },
-      bronze: { fullstack: 12, "ia-generativa": 10, "ia-soft-skills": 3 },
+      ouro:   calcVagas(TOTAIS_MEDALHA.ouro),
+      prata:  calcVagas(TOTAIS_MEDALHA.prata),
+      bronze: calcVagas(TOTAIS_MEDALHA.bronze),
     };
 
     // Função de ordenação por nota > presença > progresso
@@ -574,13 +681,13 @@
     ["ouro", "prata", "bronze"].forEach((medalha) => {
       const vagasPorFormacao = { ...VAGAS[medalha] };
       const escolhidos = {};
-      FORMATIONS.forEach((f) => {
+      GT.FORMATIONS.forEach((f) => {
         escolhidos[f.id] = [];
       });
       let totalSobras = 0;
 
       // 1ª passagem: cada formação entrega seus melhores até o limite
-      FORMATIONS.forEach((f) => {
+      GT.FORMATIONS.forEach((f) => {
         const disponiveis = porFormacao[f.id].filter(
           (s) => !jaEscolhidos.has(s.id),
         );
@@ -607,7 +714,7 @@
       }
 
       // Registra medalhas e marca como escolhidos
-      FORMATIONS.forEach((f) => {
+      GT.FORMATIONS.forEach((f) => {
         (escolhidos[f.id] || []).forEach((s) => {
           jaEscolhidos.add(s.id);
           result.set(s.id, { medalha, media: s._media });
@@ -619,7 +726,10 @@
   }
 
   window.GT = {
-    FORMATIONS,
+    get FORMATIONS() { return FORMATIONS; },
+    BASE_FORMATIONS,
+    loadDynamicFormations,
+    createDynamicFormation,
     UNIVERSAL_FIELDS,
     EXTRA_FIELDS,
     calcStatus,

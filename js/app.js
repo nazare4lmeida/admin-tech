@@ -37,9 +37,27 @@
     loginPage.classList.add("hidden");
     appPage.classList.remove("hidden");
     updateSupabaseIndicator();
+    // Load dynamic formations before rendering sidebar
+    await GT.loadDynamicFormations();
+    renderSidebarFormations();
     await Table.updateAllBadges();
     switchFormation("fullstack");
     startRealtime();
+  }
+
+  // ── Render sidebar formation nav dynamically ──────────────────
+  function renderSidebarFormations() {
+    const nav = document.getElementById("formationNav");
+    if (!nav) return;
+    nav.innerHTML = "";
+    GT.FORMATIONS.forEach(f => {
+      const btn = document.createElement("button");
+      btn.className = "nav-item" + (f.id === _activeFormation ? " active" : "");
+      btn.dataset.formation = f.id;
+      btn.innerHTML = `<span class="nav-icon">${f.icon}</span><span>${f.label}</span><span class="nav-badge" id="badge-${f.id}">0</span>`;
+      btn.addEventListener("click", () => switchFormation(f.id));
+      nav.appendChild(btn);
+    });
   }
 
   // ============================================================
@@ -130,12 +148,112 @@
     closeSidebar();
   }
 
-  document.querySelectorAll(".nav-item[data-formation]").forEach(btn => {
-    btn.addEventListener("click", () => switchFormation(btn.dataset.formation));
-  });
-
   // Relatório
   document.getElementById("btnReport").addEventListener("click", showReportView);
+
+  // ── Nova Turma ────────────────────────────────────────────────
+  document.getElementById("btnNewFormation")?.addEventListener("click", openNewFormationModal);
+
+  function openNewFormationModal() {
+    const existing = document.getElementById("newFormationOverlay");
+    if (existing) existing.remove();
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.id = "newFormationOverlay";
+    overlay.innerHTML = `
+      <div class="modal-box" style="max-width:440px">
+        <button class="modal-close" id="nfClose">✕</button>
+        <div class="modal-header">
+          <div class="modal-icon">📚</div>
+          <div class="modal-title-wrap">
+            <div class="modal-title">Nova Turma</div>
+            <div class="modal-subtitle">Crie uma nova formação no sistema</div>
+          </div>
+        </div>
+        <div class="modal-fields">
+          <div class="modal-field">
+            <label>Nome da Turma</label>
+            <input type="text" id="nfLabel" placeholder="Ex: Presencial IA Gen - Aldeota" />
+          </div>
+          <div class="modal-field">
+            <label>Ícone (emoji)</label>
+            <input type="text" id="nfIcon" placeholder="🏫" value="🏫" maxlength="4" />
+          </div>
+          <div class="modal-field">
+            <label>Cor (hex)</label>
+            <div style="display:flex;gap:8px;align-items:center">
+              <input type="color" id="nfColorPicker" value="#6366f1" style="width:40px;height:36px;border:none;cursor:pointer;border-radius:6px;padding:2px" />
+              <input type="text" id="nfColor" value="#6366f1" placeholder="#6366f1" style="flex:1" />
+            </div>
+          </div>
+          <div class="modal-field">
+            <label>Tipo</label>
+            <select id="nfTipo">
+              <option value="presencial">Presencial</option>
+              <option value="online">Online</option>
+            </select>
+          </div>
+        </div>
+        <p style="font-size:12px;color:var(--text3);padding:0 4px;margin-top:4px;line-height:1.5">
+          ⚠️ Após criar, execute o SQL gerado no Supabase para criar a tabela da turma.
+        </p>
+        <div class="modal-actions">
+          <button class="btn-modal-cancel" id="nfCancel">Cancelar</button>
+          <button class="btn-modal-apply" id="nfConfirm">✓ Criar Turma</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    // Sync color picker ↔ text
+    const picker = document.getElementById("nfColorPicker");
+    const colorTxt = document.getElementById("nfColor");
+    picker.addEventListener("input", () => { colorTxt.value = picker.value; });
+    colorTxt.addEventListener("input", () => { if (/^#[0-9a-f]{6}$/i.test(colorTxt.value)) picker.value = colorTxt.value; });
+
+    const close = () => overlay.remove();
+    document.getElementById("nfClose").onclick = close;
+    document.getElementById("nfCancel").onclick = close;
+    overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+
+    document.getElementById("nfConfirm").onclick = async () => {
+      const label = document.getElementById("nfLabel").value.trim();
+      if (!label) { toast("Digite o nome da turma.", "error"); return; }
+      const icon  = document.getElementById("nfIcon").value.trim() || "📚";
+      const color = document.getElementById("nfColor").value.trim() || "#6366f1";
+      try {
+        const id = await GT.createDynamicFormation({ label, icon, color });
+        const tableName = "alunos_" + id.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+        const sql = `CREATE TABLE IF NOT EXISTS public.${tableName} (\n  id TEXT PRIMARY KEY,\n  nome TEXT NOT NULL DEFAULT '',\n  formacao TEXT NOT NULL DEFAULT '${id}',\n  sede TEXT,\n  presenca_final_plat NUMERIC(5,1),\n  nota_projeto_final NUMERIC(4,1),\n  progresso_curso NUMERIC(5,1),\n  status_importado TEXT,\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);\nALTER TABLE public.${tableName} ENABLE ROW LEVEL SECURITY;\nCREATE POLICY "allow_all_${id}" ON public.${tableName} FOR ALL USING (true) WITH CHECK (true);`;
+        close();
+        renderSidebarFormations();
+        await Table.updateAllBadges();
+        // Show SQL to copy
+        const sqlOverlay = document.createElement("div");
+        sqlOverlay.className = "modal-overlay";
+        sqlOverlay.innerHTML = `
+          <div class="modal-box" style="max-width:560px">
+            <button class="modal-close" onclick="this.closest('.modal-overlay').remove()">✕</button>
+            <div class="modal-header">
+              <div class="modal-icon">✅</div>
+              <div class="modal-title-wrap">
+                <div class="modal-title">Turma criada!</div>
+                <div class="modal-subtitle">Execute o SQL abaixo no Supabase SQL Editor</div>
+              </div>
+            </div>
+            <textarea readonly style="width:100%;height:180px;font-family:monospace;font-size:11px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;padding:10px;color:var(--text1);resize:none">${sql}</textarea>
+            <div class="modal-actions">
+              <button class="btn-modal-apply" onclick="navigator.clipboard.writeText(document.querySelector('textarea').value);toast('SQL copiado!','success')">📋 Copiar SQL</button>
+              <button class="btn-modal-cancel" onclick="this.closest('.modal-overlay').remove()">Fechar</button>
+            </div>
+          </div>`;
+        document.body.appendChild(sqlOverlay);
+        toast(`Turma "${label}" criada!`, "success");
+      } catch (err) {
+        toast("Erro ao criar turma: " + err.message, "error");
+      }
+    };
+    closeSidebar();
+  }
   document.getElementById("btnRefreshReport")?.addEventListener("click", () => Report.render());
   document.getElementById("menuBtnReport")?.addEventListener("click", openSidebar);
  document.getElementById("btnPrintReport")?.addEventListener("click", () => {
