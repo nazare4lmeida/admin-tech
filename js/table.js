@@ -91,7 +91,6 @@
         <th>Frequência (%)</th>
         <th>Nota Final</th>
         <th>Progresso (%)</th>
-        <th style="min-width:160px">Nota Final (média)</th>
         <th style="width:90px">Medalha</th>
         <th style="min-width:180px">Status Final</th>
         <th style="width:36px"></th>
@@ -383,11 +382,6 @@
       }
       updateSummary(formation.id);
       updateBadge(formation.id);
-
-      // 🔄 Atualiza o relatório se ele estiver aberto
-      if (document.getElementById("reportView")?.classList.contains("active")) {
-        Report.render();
-      }
     }
 
     const tdIdx = document.createElement("td");
@@ -401,6 +395,91 @@
       makeText(student.nome, "name-input", (v) => update("nome", v)),
     );
     tr.appendChild(tdNome);
+
+    // ── PRESENCIAL: renderiza apenas os campos simplificados ──────────────
+    if (formation.presencial) {
+      // Formação (read-only label)
+      const tdFormP = document.createElement("td");
+      tdFormP.textContent = formation.label;
+      tdFormP.style.color = "var(--text2)";
+      tr.appendChild(tdFormP);
+
+      // Sede (select)
+      const tdSede = document.createElement("td");
+      tdSede.appendChild(
+        makeSelect(["", "Aldeota", "Bezerra", "Sul"], student.sede || "", (v) =>
+          update("sede", v),
+        ),
+      );
+      tr.appendChild(tdSede);
+
+      // Frequência (%)
+      const tdFreq = document.createElement("td");
+      tdFreq.appendChild(
+        makeNumber(student.presencaFinalPlat, 0, 100, 1, (v) =>
+          update("presencaFinalPlat", v),
+        ),
+      );
+      tr.appendChild(tdFreq);
+
+      // Nota Final
+      const tdNota = document.createElement("td");
+      tdNota.appendChild(
+        makeNumber(student.notaProjetoFinal, 0, 10, 0.1, (v) =>
+          update("notaProjetoFinal", v),
+        ),
+      );
+      tr.appendChild(tdNota);
+
+      // Progresso (%)
+      const tdProg = document.createElement("td");
+      tdProg.appendChild(
+        makeNumber(student.progressoCurso, 0, 100, 0.1, (v) =>
+          update("progressoCurso", v),
+        ),
+      );
+      tr.appendChild(tdProg);
+
+      // Medalha
+      const tdMedP = document.createElement("td");
+      tdMedP.style.textAlign = "center";
+      const riP = _rankMap ? _rankMap.get(student.id) : null;
+      if (riP) {
+        const bP = document.createElement("span");
+        bP.className = "medal-badge medal-" + riP.medalha;
+        bP.textContent =
+          ({ ouro: "🥇", prata: "🥈", bronze: "🥉" }[riP.medalha] || "") +
+          " " +
+          riP.medalha.charAt(0).toUpperCase() +
+          riP.medalha.slice(1);
+        tdMedP.appendChild(bP);
+      }
+      tr.appendChild(tdMedP);
+
+      // Status Final
+      const tdStP = document.createElement("td");
+      tdStP.className = "status-cell";
+      tdStP.appendChild(makeStatusBadge(GT.calcStatus(student)));
+      tr.appendChild(tdStP);
+
+      // Excluir
+      const tdDelP = document.createElement("td");
+      const btnDelP = document.createElement("button");
+      btnDelP.className = "btn-del";
+      btnDelP.title = "Remover aluno";
+      btnDelP.textContent = "✕";
+      btnDelP.addEventListener("click", () => {
+        if (confirm(`Remover "${student.nome || "este aluno"}"?`)) {
+          GT.deleteStudent(formation.id, student.id)
+            .then(() => Table.render(formation.id))
+            .catch((err) => toast("Erro ao excluir: " + err.message, "error"));
+        }
+      });
+      tdDelP.appendChild(btnDelP);
+      tr.appendChild(tdDelP);
+      return tr;
+    }
+    // ── FIM PRESENCIAL ────────────────────────────────────────────────────
 
     const tdForm = document.createElement("td");
     const formSel = makeSelect(

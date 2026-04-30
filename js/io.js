@@ -40,7 +40,20 @@
     "projeto back-end": "projetoBack",
     "nota do projeto back-end": "notaBack",
     "nota back": "notaBack",
+    // Campos presenciais
+    sede: "sede",
+    frequencia: "presencaFinalPlat",
+    "frequencia (%)": "presencaFinalPlat",
+    "nota final": "notaProjetoFinal",
+    "nota final (0 10)": "notaProjetoFinal",
+    progresso: "progressoCurso",
+    "progresso (%)": "progressoCurso",
+    "formacao (auto)": "formacao_label",
   };
+
+  // Campos que podem vir como decimal do Excel (ex: 0.47 em vez de 47%)
+  // Esses campos esperam valores de 0-100, então multiplicamos por 100 se necessário
+  const PCT_FIELDS = new Set(["presencaFinalPlat", "progressoCurso"]);
 
   function normalizeKey(str) {
     return (str || "")
@@ -67,6 +80,16 @@
       if (l.includes(fl) || fl.includes(l)) return f.id;
     }
     return null;
+  }
+
+  // Converte valor de porcentagem: se vier como decimal (0-1), multiplica por 100
+  function normalizePct(val) {
+    if (val === "" || val === null || val === undefined) return val;
+    const n = parseFloat(val);
+    if (isNaN(n)) return val;
+    // Se vier entre 0 e 1 (formato decimal do Excel), converte para 0-100
+    if (n > 0 && n <= 1) return Math.round(n * 1000) / 10;
+    return n;
   }
 
   function doImport(file, currentFormationId) {
@@ -106,7 +129,15 @@
         rows.forEach((row) => {
           const mapped = {};
           Object.keys(row).forEach((col) => {
-            if (colMapping[col]) mapped[colMapping[col]] = row[col];
+            if (colMapping[col]) {
+              const fieldKey = colMapping[col];
+              let val = row[col];
+              // Normaliza campos de porcentagem que o Excel salva como decimal
+              if (PCT_FIELDS.has(fieldKey)) {
+                val = normalizePct(val);
+              }
+              mapped[fieldKey] = val;
+            }
           });
           const nome = (mapped.nome || "").toString().trim();
           if (!nome) {
@@ -175,7 +206,6 @@
     document.querySelectorAll("input[name='exportStatus']").forEach((cb) => {
       cb.onchange = function () {
         if (this.value === "") {
-          // clicking "all" — uncheck others
           if (this.checked) {
             document
               .querySelectorAll("input[name='exportStatus']")
@@ -184,7 +214,6 @@
               });
           }
         } else {
-          // clicking specific status — uncheck "all"
           if (allCb) allCb.checked = false;
         }
       };
@@ -245,7 +274,6 @@
         }));
       }
 
-      // Filter by status if any selected
       if (statuses && statuses.length > 0) {
         allStudents = allStudents.filter((s) =>
           statuses.includes(s._status.key),
@@ -310,11 +338,9 @@
       const wb = XLSX.utils.book_new();
 
       if (formation === "all") {
-        // Aba geral
         const ws = XLSX.utils.json_to_sheet(buildRows(allStudents));
         ws["!cols"] = colWidths;
         XLSX.utils.book_append_sheet(wb, ws, "Todos os Alunos");
-        // Aba por formação
         for (const f of GT.FORMATIONS) {
           const fRows = allStudents.filter(
             (s) => s._formationLabel === f.label,
@@ -457,7 +483,9 @@
       if (formation === "all") {
         body += `<h3>Todos os Alunos</h3>` + buildTable(allStudents);
         for (const f of GT.FORMATIONS) {
-          const fRows = allStudents.filter((s) => s._formacaoLabel === f.label);
+          const fRows = allStudents.filter(
+            (s) => s._formationLabel === f.label,
+          );
           if (fRows.length === 0) continue;
           body +=
             `<h3 style="margin-top:32px">${f.label}</h3>` + buildTable(fRows);
