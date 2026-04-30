@@ -296,12 +296,24 @@
     const rankMap = GT.calcRanking(todos);
     if (rankMap.size === 0) return "";
 
-    // Conta medalhas por formação
+    // Conta medalhas — usa medalhaManual se existir, senão usa o calculado
     const contagem = {};
     GT.FORMATIONS.forEach((f) => {
       contagem[f.id] = { ouro: 0, prata: 0, bronze: 0, total: 0 };
     });
-    rankMap.forEach((info, _id) => {
+
+    // Primeiro aplica medalhas manuais (sobrescrevem o ranking automático)
+    const rankMapFinal = new Map(rankMap);
+    todos.forEach((s) => {
+      if (s.medalhaManual) {
+        rankMapFinal.set(s.id, {
+          medalha: s.medalhaManual,
+          media: GT.calcNotaMedia(s) || 0,
+        });
+      }
+    });
+
+    rankMapFinal.forEach((info, _id) => {
       const fid = todos.find((s) => s.id === _id)?.formacao;
       if (fid && contagem[fid]) {
         contagem[fid][info.medalha]++;
