@@ -637,45 +637,29 @@
   // Critérios de ordenação: nota média > presença > progresso
   // ============================================================
   function calcRanking(students) {
-    // Vagas fixas por medalha e formação
-    // Vagas proporcionais ao número de elegíveis por formação
-    const TOTAIS_MEDALHA = { ouro: 10, prata: 15, bronze: 25 };
-
-    // Conta total de alunos por formação na lista recebida
-    const totalPorFormacao = {};
-    GT.FORMATIONS.forEach((f) => {
-      totalPorFormacao[f.id] = 0;
-    });
-    students.forEach((s) => {
-      if (totalPorFormacao[s.formacao] !== undefined)
-        totalPorFormacao[s.formacao]++;
-    });
-    const grandTotal =
-      Object.values(totalPorFormacao).reduce((a, b) => a + b, 0) || 1;
-
-    function calcVagas(total) {
-      const raw = {};
-      let soma = 0;
-      GT.FORMATIONS.forEach((f) => {
-        raw[f.id] = Math.round((totalPorFormacao[f.id] / grandTotal) * total);
-        soma += raw[f.id];
-      });
-      const diff = total - soma;
-      if (diff !== 0) {
-        const maior = GT.FORMATIONS.reduce((a, b) =>
-          (totalPorFormacao[a.id] || 0) >= (totalPorFormacao[b.id] || 0)
-            ? a
-            : b,
-        );
-        raw[maior.id] = (raw[maior.id] || 0) + diff;
-      }
-      return raw;
-    }
-
+    // Vagas fixas por formação e medalha — sem redistribuição de sobras
     const VAGAS = {
-      ouro:   { "fullstack": 3, "ia-generativa": 3, "ia-soft-skills": 2, "presencial-ia-gen": 1, "presencial-ia-soft": 1 },
-      prata:  { "fullstack": 6, "ia-generativa": 4, "ia-soft-skills": 3, "presencial-ia-gen": 1, "presencial-ia-soft": 1 },
-      bronze: { "fullstack": 11, "ia-generativa": 9, "ia-soft-skills": 3, "presencial-ia-gen": 1, "presencial-ia-soft": 1 },
+      ouro: {
+        fullstack: 3,
+        "ia-generativa": 3,
+        "ia-soft-skills": 2,
+        "presencial-ia-gen": 1,
+        "presencial-ia-soft": 1,
+      },
+      prata: {
+        fullstack: 6,
+        "ia-generativa": 4,
+        "ia-soft-skills": 3,
+        "presencial-ia-gen": 1,
+        "presencial-ia-soft": 1,
+      },
+      bronze: {
+        fullstack: 11,
+        "ia-generativa": 9,
+        "ia-soft-skills": 3,
+        "presencial-ia-gen": 1,
+        "presencial-ia-soft": 1,
+      },
     };
 
     // Função de ordenação por nota > presença > progresso
@@ -725,23 +709,6 @@
         escolhidos[f.id] = disponiveis.slice(0, vagas);
         totalSobras += Math.max(0, vagas - escolhidos[f.id].length);
       });
-
-      // 2ª passagem: redistribui sobras pelo pool global (todos não escolhidos ainda)
-      if (totalSobras > 0) {
-        const jaNestaRodada = new Set(
-          FORMATIONS.flatMap((f) => escolhidos[f.id].map((s) => s.id)),
-        );
-        const pool = FORMATIONS.flatMap((f) =>
-          porFormacao[f.id].filter(
-            (s) => !jaEscolhidos.has(s.id) && !jaNestaRodada.has(s.id),
-          ),
-        );
-        ordenar(pool);
-        pool.slice(0, totalSobras).forEach((s) => {
-          if (!escolhidos[s.formacao]) escolhidos[s.formacao] = [];
-          escolhidos[s.formacao].push(s);
-        });
-      }
 
       // Registra medalhas e marca como escolhidos
       GT.FORMATIONS.forEach((f) => {
