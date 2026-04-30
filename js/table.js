@@ -9,14 +9,14 @@
 (function () {
   "use strict";
 
-  let _currentFormation  = null;
-  let _searchTerm        = "";
-  let _filterStatus      = "";
-  let _selectedIds       = new Set();
-  let _fillModeEnabled   = false;
-  let _compactMode       = false;   // controlado pelo botão da topbar
-  let _lastStudentsList  = [];      // cache para navList
-  let _rankMap           = null;    // Map<id, {medalha, posicao, media}>
+  let _currentFormation = null;
+  let _searchTerm = "";
+  let _filterStatus = "";
+  let _selectedIds = new Set();
+  let _fillModeEnabled = false;
+  let _compactMode = false; // controlado pelo botão da topbar
+  let _lastStudentsList = []; // cache para navList
+  let _rankMap = null; // Map<id, {medalha, posicao, media}>
 
   // ============================================================
   // COMPACT MODE TOGGLE  (exposto para app.js ligar o botão)
@@ -35,21 +35,41 @@
 
     // Campos universais relevantes
     const checks = [
-      { key: "provaRecuperacao",  label: "PR",  okVals: ["Fez – Aprovado", "Fez – Reprovado"] },
-      { key: "desafioPresenca",   label: "DP",  okVals: ["Fez – Aprovado", "Fez – Reprovado"] },
-      { key: "projetoFinal",      label: "PF",  okVals: ["Entregou – Aprovado", "Entregou – Reprovado"] },
+      {
+        key: "provaRecuperacao",
+        label: "PR",
+        okVals: ["Fez – Aprovado", "Fez – Reprovado"],
+      },
+      {
+        key: "desafioPresenca",
+        label: "DP",
+        okVals: ["Fez – Aprovado", "Fez – Reprovado"],
+      },
+      {
+        key: "projetoFinal",
+        label: "PF",
+        okVals: ["Entregou – Aprovado", "Entregou – Reprovado"],
+      },
     ];
 
     // Extra Fullstack
     if (formation && formation.id === "fullstack") {
-      checks.push({ key: "projetoFront", label: "PFront", okVals: ["Entregou – Aprovado", "Entregou – Reprovado"] });
-      checks.push({ key: "projetoBack",  label: "PBack",  okVals: ["Entregou – Aprovado", "Entregou – Reprovado"] });
+      checks.push({
+        key: "projetoFront",
+        label: "PFront",
+        okVals: ["Entregou – Aprovado", "Entregou – Reprovado"],
+      });
+      checks.push({
+        key: "projetoBack",
+        label: "PBack",
+        okVals: ["Entregou – Aprovado", "Entregou – Reprovado"],
+      });
     }
 
-    checks.forEach(c => {
+    checks.forEach((c) => {
       const val = student[c.key] || "";
       if (!val) return; // sem dado: não exibe o chip
-      const ok = c.okVals.some(v => val.includes(v));
+      const ok = c.okVals.some((v) => val.includes(v));
       chips.push({ label: c.label, ok });
     });
 
@@ -79,31 +99,33 @@
       return;
     }
     const head = document.getElementById("tableHead");
-    const tr   = document.createElement("tr");
+    const tr = document.createElement("tr");
 
     const thChk = document.createElement("th");
     thChk.style.cssText = "width:32px;text-align:center;";
     const chkAll = document.createElement("input");
-    chkAll.type = "checkbox"; chkAll.id = "chkSelectAll"; chkAll.title = "Selecionar todos";
+    chkAll.type = "checkbox";
+    chkAll.id = "chkSelectAll";
+    chkAll.title = "Selecionar todos";
     chkAll.addEventListener("change", () => toggleSelectAll(chkAll.checked));
     thChk.appendChild(chkAll);
     tr.appendChild(thChk);
 
     const cols = [
-      { label: "#",             style: "width:36px" },
+      { label: "#", style: "width:36px" },
       { label: "Nome do Aluno", style: "min-width:170px" },
-      { label: "Formação",      style: "min-width:140px" },
+      { label: "Formação", style: "min-width:140px" },
     ];
-    GT.UNIVERSAL_FIELDS.forEach(f => cols.push({ label: f.label }));
-    (formation.extra || []).forEach(ek => {
-      (GT.EXTRA_FIELDS[ek] || []).forEach(f => cols.push({ label: f.label }));
+    GT.UNIVERSAL_FIELDS.forEach((f) => cols.push({ label: f.label }));
+    (formation.extra || []).forEach((ek) => {
+      (GT.EXTRA_FIELDS[ek] || []).forEach((f) => cols.push({ label: f.label }));
     });
-    cols.push({ label: "Nota Final",   style: "width:90px;text-align:center" });
-    cols.push({ label: "Medalha",      style: "width:90px;text-align:center" });
+    cols.push({ label: "Nota Final", style: "width:90px;text-align:center" });
+    cols.push({ label: "Medalha", style: "width:90px;text-align:center" });
     cols.push({ label: "Status Final", style: "min-width:200px" });
-    cols.push({ label: "",             style: "width:36px" });
+    cols.push({ label: "", style: "width:36px" });
 
-    cols.forEach(c => {
+    cols.forEach((c) => {
       const th = document.createElement("th");
       th.textContent = c.label;
       if (c.style) th.style.cssText = c.style;
@@ -119,9 +141,10 @@
   // ============================================================
   function makeSelect(options, value, onChange) {
     const sel = document.createElement("select");
-    options.forEach(opt => {
+    options.forEach((opt) => {
       const o = document.createElement("option");
-      o.value = opt; o.textContent = opt || "—";
+      o.value = opt;
+      o.textContent = opt || "—";
       if (opt === value) o.selected = true;
       sel.appendChild(o);
     });
@@ -131,20 +154,25 @@
 
   function makeNumber(value, min, max, step, onChange) {
     const inp = document.createElement("input");
-    inp.type = "number"; inp.min = min; inp.max = max; inp.step = step || 1;
+    inp.type = "number";
+    inp.min = min;
+    inp.max = max;
+    inp.step = step || 1;
     inp.value = value !== undefined && value !== "" ? value : "";
     inp.addEventListener("change", () => {
       let v = parseFloat(inp.value);
       if (isNaN(v)) v = "";
       else v = Math.min(max, Math.max(min, v));
-      inp.value = v; onChange(v);
+      inp.value = v;
+      onChange(v);
     });
     return inp;
   }
 
   function makeText(value, cls, onChange) {
     const inp = document.createElement("input");
-    inp.type = "text"; inp.value = value || "";
+    inp.type = "text";
+    inp.value = value || "";
     if (cls) inp.className = cls;
     let timer;
     inp.addEventListener("input", () => {
@@ -165,7 +193,7 @@
   // SELECT ALL
   // ============================================================
   function toggleSelectAll(checked) {
-    document.querySelectorAll(".row-checkbox").forEach(chk => {
+    document.querySelectorAll(".row-checkbox").forEach((chk) => {
       chk.checked = checked;
       const id = chk.dataset.id;
       if (checked) _selectedIds.add(id);
@@ -175,7 +203,7 @@
   }
 
   function updateBulkDeleteBar() {
-    const bar   = document.getElementById("bulkDeleteBar");
+    const bar = document.getElementById("bulkDeleteBar");
     const count = _selectedIds.size;
     if (!bar) return;
     if (count > 0) {
@@ -183,7 +211,8 @@
       const label = bar.querySelector(".bulk-count");
       if (label) label.textContent = count + " aluno(s) selecionado(s)";
       const fillBtn = document.getElementById("btnBulkFill");
-      if (fillBtn) fillBtn.style.display = _fillModeEnabled ? "inline-flex" : "none";
+      if (fillBtn)
+        fillBtn.style.display = _fillModeEnabled ? "inline-flex" : "none";
     } else {
       bar.classList.add("hidden");
     }
@@ -195,18 +224,24 @@
   function buildCompactRow(student, index, formation, allStudents) {
     const tr = document.createElement("tr");
     tr.dataset.id = student.id;
-    tr.className  = "compact-row";
+    tr.className = "compact-row";
 
     // ── Checkbox ──────────────────────────────────────────────
     const tdChk = document.createElement("td");
     tdChk.style.cssText = "text-align:center;width:32px;";
     const chk = document.createElement("input");
-    chk.type = "checkbox"; chk.className = "row-checkbox"; chk.dataset.id = student.id;
+    chk.type = "checkbox";
+    chk.className = "row-checkbox";
+    chk.dataset.id = student.id;
     chk.checked = _selectedIds.has(student.id);
-    chk.addEventListener("change", e => {
+    chk.addEventListener("change", (e) => {
       e.stopPropagation();
       if (chk.checked) _selectedIds.add(student.id);
-      else { _selectedIds.delete(student.id); const ca = document.getElementById("chkSelectAll"); if (ca) ca.checked = false; }
+      else {
+        _selectedIds.delete(student.id);
+        const ca = document.getElementById("chkSelectAll");
+        if (ca) ca.checked = false;
+      }
       updateBulkDeleteBar();
     });
     tdChk.appendChild(chk);
@@ -228,7 +263,7 @@
 
     // Nome
     const nameSpan = document.createElement("span");
-    nameSpan.className   = "compact-name";
+    nameSpan.className = "compact-name";
     nameSpan.textContent = student.nome || "(sem nome)";
     wrapper.appendChild(nameSpan);
 
@@ -237,9 +272,9 @@
     chipsWrap.className = "compact-chips";
 
     const chips = _buildChips(student, formation);
-    chips.forEach(c => {
+    chips.forEach((c) => {
       const chip = document.createElement("span");
-      chip.className   = "compact-chip " + (c.ok ? "chip-ok" : "chip-no");
+      chip.className = "compact-chip " + (c.ok ? "chip-ok" : "chip-no");
       chip.textContent = (c.ok ? "✓" : "✕") + " " + c.label;
       chipsWrap.appendChild(chip);
     });
@@ -248,7 +283,7 @@
     const mediaCmp = GT.calcNotaMedia(student);
     if (mediaCmp !== null) {
       const notaChip = document.createElement("span");
-      notaChip.className   = "compact-chip chip-nota";
+      notaChip.className = "compact-chip chip-nota";
       notaChip.textContent = "✎ " + mediaCmp.toFixed(1);
       chipsWrap.appendChild(notaChip);
     }
@@ -256,16 +291,21 @@
     if (rankInfoCmp) {
       const mIcons = { ouro: "🥇", prata: "🥈", bronze: "🥉" };
       const medalCmp = document.createElement("span");
-      medalCmp.className   = "medal-badge medal-" + rankInfoCmp.medalha + " compact-status";
-      medalCmp.textContent = (mIcons[rankInfoCmp.medalha] || "") + " " + rankInfoCmp.medalha.charAt(0).toUpperCase() + rankInfoCmp.medalha.slice(1);
-      medalCmp.title       = `#${rankInfoCmp.posicao} — média ${rankInfoCmp.media.toFixed(2)}`;
+      medalCmp.className =
+        "medal-badge medal-" + rankInfoCmp.medalha + " compact-status";
+      medalCmp.textContent =
+        (mIcons[rankInfoCmp.medalha] || "") +
+        " " +
+        rankInfoCmp.medalha.charAt(0).toUpperCase() +
+        rankInfoCmp.medalha.slice(1);
+      medalCmp.title = `#${rankInfoCmp.posicao} — média ${rankInfoCmp.media.toFixed(2)}`;
       chipsWrap.appendChild(medalCmp);
     }
 
     // Certificado (status final) — ao final da linha
-    const status    = GT.calcStatus(student);
+    const status = GT.calcStatus(student);
     const statusChip = document.createElement("span");
-    statusChip.className   = "status-badge " + status.key + " compact-status";
+    statusChip.className = "status-badge " + status.key + " compact-status";
     statusChip.textContent = status.label;
     chipsWrap.appendChild(statusChip);
 
@@ -273,9 +313,10 @@
     tdMain.appendChild(wrapper);
 
     // ── Clique abre o modal de preenchimento ──────────────────
-    tdMain.addEventListener("click", e => {
+    tdMain.addEventListener("click", (e) => {
       if (e.target.tagName === "INPUT") return;
-      if (_fillModeEnabled || true) { // em modo compacto, sempre abre o modal
+      if (_fillModeEnabled || true) {
+        // em modo compacto, sempre abre o modal
         SmartFill.openModal(student, [student.id], formation.id, allStudents);
       }
     });
@@ -291,57 +332,82 @@
     const tr = document.createElement("tr");
     tr.dataset.id = student.id;
 
-    tr.addEventListener("click", e => {
+    tr.addEventListener("click", (e) => {
       if (!_fillModeEnabled) return;
-      if (e.target.tagName === "INPUT" || e.target.tagName === "SELECT" || e.target.tagName === "BUTTON") return;
+      if (
+        e.target.tagName === "INPUT" ||
+        e.target.tagName === "SELECT" ||
+        e.target.tagName === "BUTTON"
+      )
+        return;
       if (_selectedIds.size > 1 && _selectedIds.has(student.id)) {
         SmartFill.openModal(null, [..._selectedIds], formation.id, allStudents);
       } else {
         SmartFill.openModal(student, [student.id], formation.id, allStudents);
       }
     });
-    if (_fillModeEnabled) { tr.style.cursor = "pointer"; tr.title = "Clique para preencher este aluno"; }
+    if (_fillModeEnabled) {
+      tr.style.cursor = "pointer";
+      tr.title = "Clique para preencher este aluno";
+    }
 
     const tdChk = document.createElement("td");
     tdChk.style.textAlign = "center";
     const chk = document.createElement("input");
-    chk.type = "checkbox"; chk.className = "row-checkbox"; chk.dataset.id = student.id;
+    chk.type = "checkbox";
+    chk.className = "row-checkbox";
+    chk.dataset.id = student.id;
     chk.checked = _selectedIds.has(student.id);
     chk.addEventListener("change", () => {
       if (chk.checked) _selectedIds.add(student.id);
-      else { _selectedIds.delete(student.id); const ca = document.getElementById("chkSelectAll"); if (ca) ca.checked = false; }
+      else {
+        _selectedIds.delete(student.id);
+        const ca = document.getElementById("chkSelectAll");
+        if (ca) ca.checked = false;
+      }
       updateBulkDeleteBar();
     });
     tdChk.appendChild(chk);
     tr.appendChild(tdChk);
 
     function update(field, value) {
-      GT.updateField(formation.id, student.id, field, value).catch(err => {
+      GT.updateField(formation.id, student.id, field, value).catch((err) => {
         console.error("updateField error:", err);
         toast("Erro ao salvar: " + err.message, "error");
       });
       student[field] = value;
       const statusCell = tr.querySelector(".status-cell");
-      if (statusCell) { statusCell.innerHTML = ""; statusCell.appendChild(makeStatusBadge(GT.calcStatus(student))); }
+      if (statusCell) {
+        statusCell.innerHTML = "";
+        statusCell.appendChild(makeStatusBadge(GT.calcStatus(student)));
+      }
       updateSummary(formation.id);
       updateBadge(formation.id);
+
+      // 🔄 Atualiza o relatório se ele estiver aberto
+      if (document.getElementById("reportView")?.classList.contains("active")) {
+        Report.render();
+      }
     }
 
     const tdIdx = document.createElement("td");
     tdIdx.textContent = index + 1;
-    tdIdx.style.color = "var(--text3)"; tdIdx.style.textAlign = "center";
+    tdIdx.style.color = "var(--text3)";
+    tdIdx.style.textAlign = "center";
     tr.appendChild(tdIdx);
 
     const tdNome = document.createElement("td");
-    tdNome.appendChild(makeText(student.nome, "name-input", v => update("nome", v)));
+    tdNome.appendChild(
+      makeText(student.nome, "name-input", (v) => update("nome", v)),
+    );
     tr.appendChild(tdNome);
 
     const tdForm = document.createElement("td");
     const formSel = makeSelect(
-      ["", ...GT.FORMATIONS.map(f => f.label)],
-      GT.FORMATIONS.find(f => f.id === formation.id)?.label || "",
-      async val => {
-        const target = GT.FORMATIONS.find(f => f.label === val);
+      ["", ...GT.FORMATIONS.map((f) => f.label)],
+      GT.FORMATIONS.find((f) => f.id === formation.id)?.label || "",
+      async (val) => {
+        const target = GT.FORMATIONS.find((f) => f.label === val);
         if (target && target.id !== formation.id) {
           try {
             await GT.moveStudentToFormation(formation.id, target.id, student);
@@ -352,30 +418,49 @@
             toast("Erro ao mover aluno: " + err.message, "error");
           }
         }
-      }
+      },
     );
     tdForm.appendChild(formSel);
     tr.appendChild(tdForm);
 
-    GT.UNIVERSAL_FIELDS.forEach(f => {
+    GT.UNIVERSAL_FIELDS.forEach((f) => {
       const td = document.createElement("td");
-      if (f.type === "select") td.appendChild(makeSelect(f.options, student[f.key] || "", v => update(f.key, v)));
-      else td.appendChild(makeNumber(student[f.key], f.min, f.max, f.step, v => update(f.key, v)));
+      if (f.type === "select")
+        td.appendChild(
+          makeSelect(f.options, student[f.key] || "", (v) => update(f.key, v)),
+        );
+      else
+        td.appendChild(
+          makeNumber(student[f.key], f.min, f.max, f.step, (v) =>
+            update(f.key, v),
+          ),
+        );
       tr.appendChild(td);
     });
 
-    (formation.extra || []).forEach(ek => {
-      (GT.EXTRA_FIELDS[ek] || []).forEach(f => {
+    (formation.extra || []).forEach((ek) => {
+      (GT.EXTRA_FIELDS[ek] || []).forEach((f) => {
         const td = document.createElement("td");
-        if (f.type === "select") td.appendChild(makeSelect(f.options, student[f.key] || "", v => update(f.key, v)));
-        else td.appendChild(makeNumber(student[f.key], f.min, f.max, f.step, v => update(f.key, v)));
+        if (f.type === "select")
+          td.appendChild(
+            makeSelect(f.options, student[f.key] || "", (v) =>
+              update(f.key, v),
+            ),
+          );
+        else
+          td.appendChild(
+            makeNumber(student[f.key], f.min, f.max, f.step, (v) =>
+              update(f.key, v),
+            ),
+          );
         tr.appendChild(td);
       });
     });
 
     // Nota Final (calculada, read-only)
     const tdNotaFinal = document.createElement("td");
-    tdNotaFinal.style.cssText = "text-align:center;font-weight:600;color:var(--text1);";
+    tdNotaFinal.style.cssText =
+      "text-align:center;font-weight:600;color:var(--text1);";
     const mediaVal = GT.calcNotaMedia(student);
     tdNotaFinal.textContent = mediaVal !== null ? mediaVal.toFixed(1) : "—";
     tr.appendChild(tdNotaFinal);
@@ -388,7 +473,11 @@
       const badge = document.createElement("span");
       badge.className = "medal-badge medal-" + rankInfo.medalha;
       const icons = { ouro: "🥇", prata: "🥈", bronze: "🥉" };
-      badge.textContent = (icons[rankInfo.medalha] || "") + " " + rankInfo.medalha.charAt(0).toUpperCase() + rankInfo.medalha.slice(1);
+      badge.textContent =
+        (icons[rankInfo.medalha] || "") +
+        " " +
+        rankInfo.medalha.charAt(0).toUpperCase() +
+        rankInfo.medalha.slice(1);
       badge.title = `#${rankInfo.posicao} — média ${rankInfo.media.toFixed(2)}`;
       tdMedalha.appendChild(badge);
     }
@@ -401,12 +490,14 @@
 
     const tdDel = document.createElement("td");
     const btnDel = document.createElement("button");
-    btnDel.className = "btn-del"; btnDel.title = "Remover aluno"; btnDel.textContent = "✕";
+    btnDel.className = "btn-del";
+    btnDel.title = "Remover aluno";
+    btnDel.textContent = "✕";
     btnDel.addEventListener("click", () => {
       if (confirm(`Remover "${student.nome || "este aluno"}"?`)) {
         GT.deleteStudent(formation.id, student.id)
           .then(() => Table.render(formation.id))
-          .catch(err => toast("Erro ao excluir: " + err.message, "error"));
+          .catch((err) => toast("Erro ao excluir: " + err.message, "error"));
       }
     });
     tdDel.appendChild(btnDel);
@@ -423,7 +514,7 @@
     _selectedIds.clear();
     updateBulkDeleteBar();
 
-    const formation = GT.FORMATIONS.find(f => f.id === formationId);
+    const formation = GT.FORMATIONS.find((f) => f.id === formationId);
     if (!formation) return;
 
     const tbody = document.getElementById("tableBody");
@@ -441,10 +532,12 @@
 
     if (_searchTerm) {
       const q = _searchTerm.toLowerCase();
-      students = students.filter(s => (s.nome || "").toLowerCase().includes(q));
+      students = students.filter((s) =>
+        (s.nome || "").toLowerCase().includes(q),
+      );
     }
     if (_filterStatus) {
-      students = students.filter(s => GT.calcStatus(s).key === _filterStatus);
+      students = students.filter((s) => GT.calcStatus(s).key === _filterStatus);
     }
 
     _lastStudentsList = students; // guarda para navList
@@ -465,7 +558,9 @@
     try {
       const allForRank = await GT.getStudents(formationId);
       _rankMap = GT.calcRanking(allForRank);
-    } catch { _rankMap = new Map(); }
+    } catch {
+      _rankMap = new Map();
+    }
     // Expõe para o smartfill usar ao abrir o modal
     window._rankMapForModal = _rankMap;
 
@@ -487,19 +582,32 @@
 
     updateSummaryFromList(students, formationId);
     updateBadgeFromCount(formationId, students.length);
-    document.getElementById("topbarTitle").textContent = formation.icon + " " + formation.label;
+    document.getElementById("topbarTitle").textContent =
+      formation.icon + " " + formation.label;
 
     // Atualiza botão de toggle compacto na topbar
     const btn = document.getElementById("btnCompactToggle");
-    if (btn) btn.title = _compactMode ? "Alternar para visão completa" : "Alternar para visão compacta";
+    if (btn)
+      btn.title = _compactMode
+        ? "Alternar para visão completa"
+        : "Alternar para visão compacta";
   }
 
   // ============================================================
   // SUMMARY
   // ============================================================
   function updateSummaryFromList(students, formationId) {
-    const counts = { aprovado: 0, participacao: 0, vinculacao: 0, "reprovado-falta": 0, vazio: 0 };
-    students.forEach(s => { const st = GT.calcStatus(s); counts[st.key] = (counts[st.key] || 0) + 1; });
+    const counts = {
+      aprovado: 0,
+      participacao: 0,
+      vinculacao: 0,
+      "reprovado-falta": 0,
+      vazio: 0,
+    };
+    students.forEach((s) => {
+      const st = GT.calcStatus(s);
+      counts[st.key] = (counts[st.key] || 0) + 1;
+    });
     const cards = document.getElementById("summaryCards");
     cards.innerHTML = `
       <div class="summary-card blue"><div class="card-icon">👥</div><div><div class="card-value">${students.length}</div><div class="card-label">Total</div></div></div>
@@ -533,16 +641,31 @@
     for (const f of GT.FORMATIONS) await updateBadge(f.id);
   }
 
-  function setSearch(term)   { _searchTerm  = term;   if (_currentFormation) render(_currentFormation); }
-  function setFilter(status) { _filterStatus = status; if (_currentFormation) render(_currentFormation); }
-  function getSelectedIds()  { return [..._selectedIds]; }
+  function setSearch(term) {
+    _searchTerm = term;
+    if (_currentFormation) render(_currentFormation);
+  }
+  function setFilter(status) {
+    _filterStatus = status;
+    if (_currentFormation) render(_currentFormation);
+  }
+  function getSelectedIds() {
+    return [..._selectedIds];
+  }
   function setFillMode(enabled) {
     _fillModeEnabled = enabled;
     if (_currentFormation) render(_currentFormation);
   }
 
   window.Table = {
-    render, updateSummary, updateBadge, updateAllBadges,
-    setSearch, setFilter, getSelectedIds, setFillMode, setCompactMode,
+    render,
+    updateSummary,
+    updateBadge,
+    updateAllBadges,
+    setSearch,
+    setFilter,
+    getSelectedIds,
+    setFillMode,
+    setCompactMode,
   };
 })();
