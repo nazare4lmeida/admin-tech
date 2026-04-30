@@ -23,7 +23,7 @@
   // PAGES
   // ============================================================
   const loginPage = document.getElementById("loginPage");
-  const appPage   = document.getElementById("appPage");
+  const appPage = document.getElementById("appPage");
 
   function showLogin() {
     loginPage.classList.remove("hidden");
@@ -41,7 +41,9 @@
     await GT.loadDynamicFormations();
     renderSidebarFormations();
     await Table.updateAllBadges();
-    switchFormation("fullstack");
+    const hashId = window.location.hash.replace("#", "");
+    const validId = GT.FORMATIONS.find((f) => f.id === hashId);
+    switchFormation(validId ? hashId : "fullstack");
     startRealtime();
   }
 
@@ -50,7 +52,7 @@
     const nav = document.getElementById("formationNav");
     if (!nav) return;
     nav.innerHTML = "";
-    GT.FORMATIONS.forEach(f => {
+    GT.FORMATIONS.forEach((f) => {
       const btn = document.createElement("button");
       btn.className = "nav-item" + (f.id === _activeFormation ? " active" : "");
       btn.dataset.formation = f.id;
@@ -63,17 +65,20 @@
   // ============================================================
   // VIEWS — tabela vs relatório
   // ============================================================
-  const tableView  = document.getElementById("tableView");
+  const tableView = document.getElementById("tableView");
   const reportView = document.getElementById("reportView");
-  let _activeView  = "table";
+  let _activeView = "table";
 
   function showTableView() {
     _activeView = "table";
     tableView.classList.remove("hidden-view");
     reportView.classList.remove("active");
     document.getElementById("btnReport")?.classList.remove("active");
-    document.querySelectorAll(".nav-item[data-formation]").forEach(btn => {
-      btn.classList.toggle("active", btn.dataset.formation === _activeFormation);
+    document.querySelectorAll(".nav-item[data-formation]").forEach((btn) => {
+      btn.classList.toggle(
+        "active",
+        btn.dataset.formation === _activeFormation,
+      );
     });
   }
 
@@ -81,7 +86,9 @@
     _activeView = "report";
     tableView.classList.add("hidden-view");
     reportView.classList.add("active");
-    document.querySelectorAll(".nav-item[data-formation]").forEach(btn => btn.classList.remove("active"));
+    document
+      .querySelectorAll(".nav-item[data-formation]")
+      .forEach((btn) => btn.classList.remove("active"));
     document.getElementById("btnReport")?.classList.add("active");
     Report.render();
     closeSidebar();
@@ -106,8 +113,12 @@
   // AUTH
   // ============================================================
   document.getElementById("btnLogin").addEventListener("click", handleLogin);
-  document.getElementById("loginCode").addEventListener("keydown", e => { if (e.key === "Enter") handleLogin(); });
-  document.getElementById("loginEmail").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("loginCode").focus(); });
+  document.getElementById("loginCode").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") handleLogin();
+  });
+  document.getElementById("loginEmail").addEventListener("keydown", (e) => {
+    if (e.key === "Enter") document.getElementById("loginCode").focus();
+  });
   document.getElementById("togglePw").addEventListener("click", () => {
     const inp = document.getElementById("loginCode");
     inp.type = inp.type === "password" ? "text" : "password";
@@ -115,7 +126,7 @@
 
   function handleLogin() {
     const email = document.getElementById("loginEmail").value;
-    const code  = document.getElementById("loginCode").value;
+    const code = document.getElementById("loginCode").value;
     const errEl = document.getElementById("loginError");
     errEl.classList.add("hidden");
     if (Auth.login(email, code)) {
@@ -140,8 +151,9 @@
 
   function switchFormation(id) {
     _activeFormation = id;
+    window.location.hash = id;
     showTableView();
-    document.querySelectorAll(".nav-item[data-formation]").forEach(btn => {
+    document.querySelectorAll(".nav-item[data-formation]").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.formation === id);
     });
     Table.render(id);
@@ -149,10 +161,14 @@
   }
 
   // Relatório
-  document.getElementById("btnReport").addEventListener("click", showReportView);
+  document
+    .getElementById("btnReport")
+    .addEventListener("click", showReportView);
 
   // ── Nova Turma ────────────────────────────────────────────────
-  document.getElementById("btnNewFormation")?.addEventListener("click", openNewFormationModal);
+  document
+    .getElementById("btnNewFormation")
+    ?.addEventListener("click", openNewFormationModal);
 
   function openNewFormationModal() {
     const existing = document.getElementById("newFormationOverlay");
@@ -207,22 +223,33 @@
     // Sync color picker ↔ text
     const picker = document.getElementById("nfColorPicker");
     const colorTxt = document.getElementById("nfColor");
-    picker.addEventListener("input", () => { colorTxt.value = picker.value; });
-    colorTxt.addEventListener("input", () => { if (/^#[0-9a-f]{6}$/i.test(colorTxt.value)) picker.value = colorTxt.value; });
+    picker.addEventListener("input", () => {
+      colorTxt.value = picker.value;
+    });
+    colorTxt.addEventListener("input", () => {
+      if (/^#[0-9a-f]{6}$/i.test(colorTxt.value)) picker.value = colorTxt.value;
+    });
 
     const close = () => overlay.remove();
     document.getElementById("nfClose").onclick = close;
     document.getElementById("nfCancel").onclick = close;
-    overlay.addEventListener("click", e => { if (e.target === overlay) close(); });
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close();
+    });
 
     document.getElementById("nfConfirm").onclick = async () => {
       const label = document.getElementById("nfLabel").value.trim();
-      if (!label) { toast("Digite o nome da turma.", "error"); return; }
-      const icon  = document.getElementById("nfIcon").value.trim() || "📚";
-      const color = document.getElementById("nfColor").value.trim() || "#6366f1";
+      if (!label) {
+        toast("Digite o nome da turma.", "error");
+        return;
+      }
+      const icon = document.getElementById("nfIcon").value.trim() || "📚";
+      const color =
+        document.getElementById("nfColor").value.trim() || "#6366f1";
       try {
         const id = await GT.createDynamicFormation({ label, icon, color });
-        const tableName = "alunos_" + id.replace(/[^a-z0-9]/gi, "_").toLowerCase();
+        const tableName =
+          "alunos_" + id.replace(/[^a-z0-9]/gi, "_").toLowerCase();
         const sql = `CREATE TABLE IF NOT EXISTS public.${tableName} (\n  id TEXT PRIMARY KEY,\n  nome TEXT NOT NULL DEFAULT '',\n  formacao TEXT NOT NULL DEFAULT '${id}',\n  sede TEXT,\n  presenca_final_plat NUMERIC(5,1),\n  nota_projeto_final NUMERIC(4,1),\n  progresso_curso NUMERIC(5,1),\n  status_importado TEXT,\n  created_at TIMESTAMPTZ DEFAULT NOW()\n);\nALTER TABLE public.${tableName} ENABLE ROW LEVEL SECURITY;\nCREATE POLICY "allow_all_${id}" ON public.${tableName} FOR ALL USING (true) WITH CHECK (true);`;
         close();
         renderSidebarFormations();
@@ -254,12 +281,16 @@
     };
     closeSidebar();
   }
-  document.getElementById("btnRefreshReport")?.addEventListener("click", () => Report.render());
-  document.getElementById("menuBtnReport")?.addEventListener("click", openSidebar);
- document.getElementById("btnPrintReport")?.addEventListener("click", () => {
-  // Delegado ao report.js via evento customizado
-  document.dispatchEvent(new CustomEvent("gt:printReport"));
-});
+  document
+    .getElementById("btnRefreshReport")
+    ?.addEventListener("click", () => Report.render());
+  document
+    .getElementById("menuBtnReport")
+    ?.addEventListener("click", openSidebar);
+  document.getElementById("btnPrintReport")?.addEventListener("click", () => {
+    // Delegado ao report.js via evento customizado
+    document.dispatchEvent(new CustomEvent("gt:printReport"));
+  });
 
   // ============================================================
   // SIDEBAR
@@ -285,11 +316,15 @@
 
   window.closeSidebar = closeSidebar;
   document.getElementById("menuBtn").addEventListener("click", openSidebar);
-  document.getElementById("sidebarToggle").addEventListener("click", closeSidebar);
-  document.getElementById("btnCollapseSidebar").addEventListener("click", () => {
-    const collapsed = sidebar.classList.toggle("collapsed");
-    localStorage.setItem("gt_sidebar_collapsed", collapsed ? "1" : "0");
-  });
+  document
+    .getElementById("sidebarToggle")
+    .addEventListener("click", closeSidebar);
+  document
+    .getElementById("btnCollapseSidebar")
+    .addEventListener("click", () => {
+      const collapsed = sidebar.classList.toggle("collapsed");
+      localStorage.setItem("gt_sidebar_collapsed", collapsed ? "1" : "0");
+    });
   if (localStorage.getItem("gt_sidebar_collapsed") === "1") {
     sidebar.classList.add("collapsed");
   }
@@ -297,18 +332,20 @@
   // ============================================================
   // ADD STUDENT
   // ============================================================
-  document.getElementById("btnAddStudent").addEventListener("click", async () => {
-    try {
-      showTableView();
-      await GT.addStudent(_activeFormation, "");
-      await Table.render(_activeFormation);
-      closeSidebar();
-      const scroll = document.getElementById("tableScroll");
-      scroll.scrollTop = scroll.scrollHeight;
-    } catch (err) {
-      toast("Erro ao adicionar aluno: " + err.message, "error");
-    }
-  });
+  document
+    .getElementById("btnAddStudent")
+    .addEventListener("click", async () => {
+      try {
+        showTableView();
+        await GT.addStudent(_activeFormation, "");
+        await Table.render(_activeFormation);
+        closeSidebar();
+        const scroll = document.getElementById("tableScroll");
+        scroll.scrollTop = scroll.scrollHeight;
+      } catch (err) {
+        toast("Erro ao adicionar aluno: " + err.message, "error");
+      }
+    });
 
   // ============================================================
   // IMPORT / EXPORT
@@ -331,30 +368,40 @@
   // ============================================================
   // SEARCH & FILTER
   // ============================================================
-  document.getElementById("searchInput").addEventListener("input", e => Table.setSearch(e.target.value));
-  document.getElementById("filterStatus").addEventListener("change", e => Table.setFilter(e.target.value));
+  document
+    .getElementById("searchInput")
+    .addEventListener("input", (e) => Table.setSearch(e.target.value));
+  document
+    .getElementById("filterStatus")
+    .addEventListener("change", (e) => Table.setFilter(e.target.value));
 
   // ============================================================
   // BULK DELETE
   // ============================================================
-  document.getElementById("btnBulkDelete").addEventListener("click", async () => {
-    const ids = Table.getSelectedIds();
-    if (ids.length === 0) return;
-    const confirmed = confirm(`Excluir ${ids.length} aluno(s) selecionado(s)?\n\nEssa ação não pode ser desfeita.`);
-    if (!confirmed) return;
-    try {
-      await GT.deleteMultiple(_activeFormation, ids);
-      toast(`${ids.length} aluno(s) excluído(s).`, "success");
-      await Table.render(_activeFormation);
-      await Table.updateAllBadges();
-    } catch (err) {
-      toast("Erro ao excluir: " + err.message, "error");
-    }
-  });
+  document
+    .getElementById("btnBulkDelete")
+    .addEventListener("click", async () => {
+      const ids = Table.getSelectedIds();
+      if (ids.length === 0) return;
+      const confirmed = confirm(
+        `Excluir ${ids.length} aluno(s) selecionado(s)?\n\nEssa ação não pode ser desfeita.`,
+      );
+      if (!confirmed) return;
+      try {
+        await GT.deleteMultiple(_activeFormation, ids);
+        toast(`${ids.length} aluno(s) excluído(s).`, "success");
+        await Table.render(_activeFormation);
+        await Table.updateAllBadges();
+      } catch (err) {
+        toast("Erro ao excluir: " + err.message, "error");
+      }
+    });
 
-  document.getElementById("btnCancelSelection").addEventListener("click", () => {
-    Table.render(_activeFormation);
-  });
+  document
+    .getElementById("btnCancelSelection")
+    .addEventListener("click", () => {
+      Table.render(_activeFormation);
+    });
 
   // ============================================================
   // SMART FILL
@@ -369,7 +416,8 @@
       const hint = document.querySelector(".fill-hint");
       if (hint) hint.style.opacity = _fillAssistantEnabled ? "1" : "0.5";
       const fillBtn = document.getElementById("btnBulkFill");
-      if (fillBtn) fillBtn.style.display = _fillAssistantEnabled ? "inline-flex" : "none";
+      if (fillBtn)
+        fillBtn.style.display = _fillAssistantEnabled ? "inline-flex" : "none";
     });
   }
 
@@ -401,13 +449,17 @@
     const saved = localStorage.getItem("gt_theme") || "dark";
     applyTheme(saved);
     document.getElementById("themeToggle")?.addEventListener("click", () => {
-      const current = document.documentElement.getAttribute("data-theme") || "dark";
+      const current =
+        document.documentElement.getAttribute("data-theme") || "dark";
       applyTheme(current === "dark" ? "light" : "dark");
     });
-    document.getElementById("themeToggleReport")?.addEventListener("click", () => {
-      const current = document.documentElement.getAttribute("data-theme") || "dark";
-      applyTheme(current === "dark" ? "light" : "dark");
-    });
+    document
+      .getElementById("themeToggleReport")
+      ?.addEventListener("click", () => {
+        const current =
+          document.documentElement.getAttribute("data-theme") || "dark";
+        applyTheme(current === "dark" ? "light" : "dark");
+      });
   });
 
   // ============================================================
@@ -418,35 +470,48 @@
   function startRealtime() {
     if (!window.SB || !SB.enabled()) return;
     const tables = [
-      { table: "alunos_fullstack",      fid: "fullstack" },
-      { table: "alunos_ia_generativa",  fid: "ia-generativa" },
+      { table: "alunos_fullstack", fid: "fullstack" },
+      { table: "alunos_ia_generativa", fid: "ia-generativa" },
       { table: "alunos_ia_soft_skills", fid: "ia-soft-skills" },
     ];
-    const wsUrl = SB._url.replace("https://", "wss://") + `/realtime/v1/websocket?apikey=${SB._key}&vsn=1.0.0`;
-    tables.forEach(({ table, fid }) => startRealtimeForTable(table, fid, wsUrl));
+    const wsUrl =
+      SB._url.replace("https://", "wss://") +
+      `/realtime/v1/websocket?apikey=${SB._key}&vsn=1.0.0`;
+    tables.forEach(({ table, fid }) =>
+      startRealtimeForTable(table, fid, wsUrl),
+    );
   }
 
   function startRealtimeForTable(table, fid, wsUrl) {
     const ws = new WebSocket(wsUrl);
     _wsConnections.push(ws);
-    ws.onopen = () => ws.send(JSON.stringify({
-      topic: `realtime:public:${table}`, event: "phx_join", payload: {}, ref: "1"
-    }));
+    ws.onopen = () =>
+      ws.send(
+        JSON.stringify({
+          topic: `realtime:public:${table}`,
+          event: "phx_join",
+          payload: {},
+          ref: "1",
+        }),
+      );
     ws.onmessage = (e) => {
       const msg = JSON.parse(e.data);
-      if (["INSERT","UPDATE","DELETE"].includes(msg.payload?.type)) {
-        if (fid === _activeFormation && _activeView === "table") Table.render(_activeFormation);
+      if (["INSERT", "UPDATE", "DELETE"].includes(msg.payload?.type)) {
+        if (fid === _activeFormation && _activeView === "table")
+          Table.render(_activeFormation);
         Table.updateBadge(fid);
       }
     };
-    ws.onerror = err => console.warn("Realtime WS error:", err);
+    ws.onerror = (err) => console.warn("Realtime WS error:", err);
     ws.onclose = () => {
-      setTimeout(() => { if (Auth.isLoggedIn()) startRealtimeForTable(table, fid, wsUrl); }, 3000);
+      setTimeout(() => {
+        if (Auth.isLoggedIn()) startRealtimeForTable(table, fid, wsUrl);
+      }, 3000);
     };
   }
 
   function stopRealtime() {
-    _wsConnections.forEach(ws => ws.close());
+    _wsConnections.forEach((ws) => ws.close());
     _wsConnections.length = 0;
   }
 
@@ -459,27 +524,29 @@
     showLogin();
   }
 })();
-  // ============================================================
-  // COMPACT MODE TOGGLE
-  // ============================================================
-  (function () {
-    let _compactEnabled = localStorage.getItem("gt_compact") === "1";
-    function applyCompact(enabled) {
-      _compactEnabled = enabled;
-      localStorage.setItem("gt_compact", enabled ? "1" : "0");
-      Table.setCompactMode(enabled);
-      const btn = document.getElementById("btnCompactToggle");
-      if (btn) btn.textContent = enabled ? "⊞ Expandir" : "⊟ Compacto";
-    }
-    document.addEventListener("DOMContentLoaded", () => {
-      document.getElementById("btnCompactToggle")?.addEventListener("click", () => {
+// ============================================================
+// COMPACT MODE TOGGLE
+// ============================================================
+(function () {
+  let _compactEnabled = localStorage.getItem("gt_compact") === "1";
+  function applyCompact(enabled) {
+    _compactEnabled = enabled;
+    localStorage.setItem("gt_compact", enabled ? "1" : "0");
+    Table.setCompactMode(enabled);
+    const btn = document.getElementById("btnCompactToggle");
+    if (btn) btn.textContent = enabled ? "⊞ Expandir" : "⊟ Compacto";
+  }
+  document.addEventListener("DOMContentLoaded", () => {
+    document
+      .getElementById("btnCompactToggle")
+      ?.addEventListener("click", () => {
         applyCompact(!_compactEnabled);
       });
-      // Restaura preferência salva
-      if (_compactEnabled) {
-        Table.setCompactMode(true);
-        const btn = document.getElementById("btnCompactToggle");
-        if (btn) btn.textContent = "⊞ Expandir";
-      }
-    });
-  })();
+    // Restaura preferência salva
+    if (_compactEnabled) {
+      Table.setCompactMode(true);
+      const btn = document.getElementById("btnCompactToggle");
+      if (btn) btn.textContent = "⊞ Expandir";
+    }
+  });
+})();

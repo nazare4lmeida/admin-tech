@@ -87,7 +87,6 @@
         <th style="width:32px"></th>
         <th style="width:36px">#</th>
         <th style="min-width:170px">Nome do Aluno</th>
-        <th style="min-width:140px">Formação</th>
         <th>Sede</th>
         <th>Frequência (%)</th>
         <th>Nota Final</th>
@@ -441,26 +440,46 @@
       );
       tr.appendChild(tdProg);
 
-      // Medalha
+      // Medalha (editável)
       const tdMedP = document.createElement("td");
       tdMedP.style.textAlign = "center";
       const riP = _rankMap ? _rankMap.get(student.id) : null;
-      if (riP) {
-        const bP = document.createElement("span");
-        bP.className = "medal-badge medal-" + riP.medalha;
-        bP.textContent =
-          ({ ouro: "🥇", prata: "🥈", bronze: "🥉" }[riP.medalha] || "") +
-          " " +
-          riP.medalha.charAt(0).toUpperCase() +
-          riP.medalha.slice(1);
-        tdMedP.appendChild(bP);
-      }
+      const selMedP = makeSelect(
+        ["", "ouro", "prata", "bronze"],
+        student.medalhaManual || (riP ? riP.medalha : ""),
+        (v) => update("medalhaManual", v),
+      );
+      const mlP = {
+        "": "— automático —",
+        ouro: "🥇 Ouro",
+        prata: "🥈 Prata",
+        bronze: "🥉 Bronze",
+      };
+      [...selMedP.options].forEach((o) => {
+        o.textContent = mlP[o.value] || o.value;
+      });
+      tdMedP.appendChild(selMedP);
       tr.appendChild(tdMedP);
 
-      // Status Final
+      // Status Final (editável)
       const tdStP = document.createElement("td");
       tdStP.className = "status-cell";
-      tdStP.appendChild(makeStatusBadge(GT.calcStatus(student)));
+      const selStP = makeSelect(
+        ["", "aprovado", "participacao", "vinculacao", "reprovado-falta"],
+        student.statusManual || GT.calcStatus(student).key,
+        (v) => update("statusManual", v),
+      );
+      const slP = {
+        "": "— automático —",
+        aprovado: "Certificado de Conclusão",
+        participacao: "Certificado de Participação",
+        vinculacao: "Certificado de Vinculação",
+        "reprovado-falta": "Reprovado por Falta",
+      };
+      [...selStP.options].forEach((o) => {
+        o.textContent = slP[o.value] || o.value;
+      });
+      tdStP.appendChild(selStP);
       tr.appendChild(tdStP);
 
       // Excluir
@@ -545,27 +564,46 @@
     tdNotaFinal.textContent = mediaVal !== null ? mediaVal.toFixed(1) : "—";
     tr.appendChild(tdNotaFinal);
 
-    // Medalha
+    // Medalha (editável)
     const tdMedalha = document.createElement("td");
     tdMedalha.style.textAlign = "center";
     const rankInfo = _rankMap ? _rankMap.get(student.id) : null;
-    if (rankInfo) {
-      const badge = document.createElement("span");
-      badge.className = "medal-badge medal-" + rankInfo.medalha;
-      const icons = { ouro: "🥇", prata: "🥈", bronze: "🥉" };
-      badge.textContent =
-        (icons[rankInfo.medalha] || "") +
-        " " +
-        rankInfo.medalha.charAt(0).toUpperCase() +
-        rankInfo.medalha.slice(1);
-      badge.title = `#${rankInfo.posicao} — média ${rankInfo.media.toFixed(2)}`;
-      tdMedalha.appendChild(badge);
-    }
+    const selMedalha = makeSelect(
+      ["", "ouro", "prata", "bronze"],
+      student.medalhaManual || (rankInfo ? rankInfo.medalha : ""),
+      (v) => update("medalhaManual", v),
+    );
+    const mlO = {
+      "": "— automático —",
+      ouro: "🥇 Ouro",
+      prata: "🥈 Prata",
+      bronze: "🥉 Bronze",
+    };
+    [...selMedalha.options].forEach((o) => {
+      o.textContent = mlO[o.value] || o.value;
+    });
+    tdMedalha.appendChild(selMedalha);
     tr.appendChild(tdMedalha);
 
+    // Status Final (editável)
     const tdStatus = document.createElement("td");
     tdStatus.className = "status-cell";
-    tdStatus.appendChild(makeStatusBadge(GT.calcStatus(student)));
+    const selStatus = makeSelect(
+      ["", "aprovado", "participacao", "vinculacao", "reprovado-falta"],
+      student.statusManual || GT.calcStatus(student).key,
+      (v) => update("statusManual", v),
+    );
+    const slO = {
+      "": "— automático —",
+      aprovado: "Certificado de Conclusão",
+      participacao: "Certificado de Participação",
+      vinculacao: "Certificado de Vinculação",
+      "reprovado-falta": "Reprovado por Falta",
+    };
+    [...selStatus.options].forEach((o) => {
+      o.textContent = slO[o.value] || o.value;
+    });
+    tdStatus.appendChild(selStatus);
     tr.appendChild(tdStatus);
 
     const tdDel = document.createElement("td");

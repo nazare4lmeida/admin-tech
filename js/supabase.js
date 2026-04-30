@@ -3,7 +3,7 @@
 
   //CREDENCIAIS DO SUPABASE
   const SUPABASE_URL = window.ENV?.SUPABASE_URL || "";
-const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
+  const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
 
   const isConfigured = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
 
@@ -51,7 +51,10 @@ const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
   // ROW MAPPING
   // ============================================================
   function toRow(student, formationId) {
-    const isPresencial = formationId && (formationId.startsWith("presencial") || formationId.startsWith("turma_"));
+    const isPresencial =
+      formationId &&
+      (formationId.startsWith("presencial") ||
+        formationId.startsWith("turma_"));
     if (isPresencial) {
       return {
         id: student.id || undefined,
@@ -62,6 +65,8 @@ const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
         nota_projeto_final: toNum(student.notaProjetoFinal),
         progresso_curso: toNum(student.progressoCurso),
         status_importado: student.statusImportado || null,
+        medalha_manual: student.medalhaManual || null,
+        status_manual: student.statusManual || null,
       };
     }
     const row = {
@@ -79,6 +84,8 @@ const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
       progresso_curso: toNum(student.progressoCurso),
       status_importado: student.statusImportado || null,
     };
+    row.medalha_manual = student.medalhaManual || null;
+    row.status_manual = student.statusManual || null;
     if (formationId === "fullstack") {
       row.projeto_front = student.projetoFront || null;
       row.nota_front = toNum(student.notaFront);
@@ -90,7 +97,8 @@ const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
 
   function fromRow(row, formationId) {
     const fid = formationId || row.formacao;
-    const isPresencial = fid && (fid.startsWith("presencial") || fid.startsWith("turma_"));
+    const isPresencial =
+      fid && (fid.startsWith("presencial") || fid.startsWith("turma_"));
     if (isPresencial) {
       return {
         id: row.id,
@@ -101,6 +109,8 @@ const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
         notaProjetoFinal: row.nota_projeto_final ?? "",
         progressoCurso: row.progresso_curso ?? "",
         statusImportado: row.status_importado || "",
+        medalhaManual: row.medalha_manual || "",
+        statusManual: row.status_manual || "",
       };
     }
     return {
@@ -121,6 +131,8 @@ const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
       projetoBack: row.projeto_back || "",
       notaBack: row.nota_back ?? "",
       progressoCurso: row.progresso_curso ?? "",
+      medalhaManual: row.medalha_manual || "",
+      statusManual: row.status_manual || "",
     };
   }
 
@@ -150,6 +162,8 @@ const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
     notaBack: "nota_back",
     progressoCurso: "progresso_curso",
     sede: "sede",
+    medalhaManual: "medalha_manual",
+    statusManual: "status_manual",
   };
 
   // ============================================================
@@ -167,7 +181,7 @@ const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
     const table = getTable(formationId);
     if (!table) return [];
     const rows = await sbFetch(`/${table}?order=nome.asc`);
-    return (rows || []).map(r => fromRow(r, formationId));
+    return (rows || []).map((r) => fromRow(r, formationId));
   }
 
   async function getAllStudents() {
@@ -293,7 +307,9 @@ const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
     const rows = await sbFetch("/turmas_customizadas?order=created_at.asc");
     if (!rows || !rows.length) return [];
     // Register dynamic tables
-    rows.forEach(t => { DYNAMIC_TABLE_MAP[t.id] = t.table_name; });
+    rows.forEach((t) => {
+      DYNAMIC_TABLE_MAP[t.id] = t.table_name;
+    });
     return rows;
   }
 
@@ -303,7 +319,14 @@ const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY || "";
     await sbFetch("/turmas_customizadas", {
       method: "POST",
       _prefer: "return=representation,resolution=merge-duplicates",
-      body: JSON.stringify({ id, label, icon, color, table_name: tableName, tipo: "presencial" }),
+      body: JSON.stringify({
+        id,
+        label,
+        icon,
+        color,
+        table_name: tableName,
+        tipo: "presencial",
+      }),
     });
     DYNAMIC_TABLE_MAP[id] = tableName;
   }
