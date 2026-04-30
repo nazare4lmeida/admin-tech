@@ -55,7 +55,7 @@
     if (!(window.SB && SB.enabled())) return;
     try {
       const turmas = await SB.getTurmasCustomizadas();
-      const extras = turmas.map(t => ({
+      const extras = turmas.map((t) => ({
         id: t.id,
         label: t.label,
         icon: t.icon || "📚",
@@ -571,37 +571,9 @@
   // Para outras: notaProjetoFinal
   // ============================================================
   function calcNotaMedia(student) {
-    const formacao = student.formacao || "";
-    if (formacao === "fullstack") {
-      const nf = parseFloat(student.notaFront);
-      const nb = parseFloat(student.notaBack);
-      const nfinal = parseFloat(student.notaProjetoFinal);
-      const notas = [];
-      if (
-        !isNaN(nf) &&
-        (student.projetoFront === "Entregou – Aprovado" ||
-          student.projetoFront === "Entregou – Reprovado")
-      )
-        notas.push(nf);
-      if (
-        !isNaN(nb) &&
-        (student.projetoBack === "Entregou – Aprovado" ||
-          student.projetoBack === "Entregou – Reprovado")
-      )
-        notas.push(nb);
-      if (
-        !isNaN(nfinal) &&
-        (student.projetoFinal === "Entregou – Aprovado" ||
-          student.projetoFinal === "Entregou – Reprovado")
-      )
-        notas.push(nfinal);
-      if (notas.length < 2) return null;
-      return notas.reduce((a, b) => a + b, 0) / notas.length;
-    } else {
-      const n = parseFloat(student.notaProjetoFinal);
-      if (isNaN(n)) return null;
-      return n;
-    }
+    const n = parseFloat(student.notaProjetoFinal);
+    if (isNaN(n) || n === 0) return null;
+    return n;
   }
 
   // ============================================================
@@ -618,24 +590,30 @@
     // Vagas proporcionais ao número de elegíveis por formação
     const TOTAIS_MEDALHA = { ouro: 10, prata: 15, bronze: 25 };
     const totalElegiveis = {};
-    GT.FORMATIONS.forEach(f => { totalElegiveis[f.id] = 0; });
+    GT.FORMATIONS.forEach((f) => {
+      totalElegiveis[f.id] = 0;
+    });
     students
-      .map(s => ({ ...s, _mediaTemp: calcNotaMedia(s) }))
-      .filter(s => s._mediaTemp !== null)
-      .forEach(s => { if (totalElegiveis[s.formacao] !== undefined) totalElegiveis[s.formacao]++; });
-    const grandTotal = Object.values(totalElegiveis).reduce((a,b)=>a+b,0) || 1;
+      .map((s) => ({ ...s, _mediaTemp: calcNotaMedia(s) }))
+      .filter((s) => s._mediaTemp !== null)
+      .forEach((s) => {
+        if (totalElegiveis[s.formacao] !== undefined)
+          totalElegiveis[s.formacao]++;
+      });
+    const grandTotal =
+      Object.values(totalElegiveis).reduce((a, b) => a + b, 0) || 1;
 
     function calcVagas(total) {
       const raw = {};
       let soma = 0;
-      GT.FORMATIONS.forEach(f => {
+      GT.FORMATIONS.forEach((f) => {
         raw[f.id] = Math.round((totalElegiveis[f.id] / grandTotal) * total);
         soma += raw[f.id];
       });
       const diff = total - soma;
       if (diff !== 0) {
-        const maior = GT.FORMATIONS.reduce((a,b) =>
-          (totalElegiveis[a.id] || 0) >= (totalElegiveis[b.id] || 0) ? a : b
+        const maior = GT.FORMATIONS.reduce((a, b) =>
+          (totalElegiveis[a.id] || 0) >= (totalElegiveis[b.id] || 0) ? a : b,
         );
         raw[maior.id] = (raw[maior.id] || 0) + diff;
       }
@@ -643,8 +621,8 @@
     }
 
     const VAGAS = {
-      ouro:   calcVagas(TOTAIS_MEDALHA.ouro),
-      prata:  calcVagas(TOTAIS_MEDALHA.prata),
+      ouro: calcVagas(TOTAIS_MEDALHA.ouro),
+      prata: calcVagas(TOTAIS_MEDALHA.prata),
       bronze: calcVagas(TOTAIS_MEDALHA.bronze),
     };
 
@@ -726,7 +704,9 @@
   }
 
   window.GT = {
-    get FORMATIONS() { return FORMATIONS; },
+    get FORMATIONS() {
+      return FORMATIONS;
+    },
     BASE_FORMATIONS,
     loadDynamicFormations,
     createDynamicFormation,
