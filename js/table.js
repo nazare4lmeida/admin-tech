@@ -458,15 +458,22 @@
       [...selMedP.options].forEach((o) => {
         o.textContent = mlP[o.value] || o.value;
       });
+      const medValP = student.medalhaManual || (riP ? riP.medalha : "");
+      selMedP.className = "medal-badge" + (medValP ? " medal-" + medValP : "");
+      selMedP.addEventListener("change", () => {
+        selMedP.className =
+          "medal-badge" + (selMedP.value ? " medal-" + selMedP.value : "");
+      });
       tdMedP.appendChild(selMedP);
       tr.appendChild(tdMedP);
 
       // Status Final (editável)
       const tdStP = document.createElement("td");
       tdStP.className = "status-cell";
+      const stAutoKeyP = student.statusManual || GT.calcStatus(student).key;
       const selStP = makeSelect(
         ["", "aprovado", "participacao", "vinculacao", "reprovado-falta"],
-        student.statusManual || GT.calcStatus(student).key,
+        stAutoKeyP,
         (v) => update("statusManual", v),
       );
       const slP = {
@@ -478,6 +485,11 @@
       };
       [...selStP.options].forEach((o) => {
         o.textContent = slP[o.value] || o.value;
+      });
+      selStP.className = "status-badge " + stAutoKeyP;
+      selStP.addEventListener("change", () => {
+        selStP.className =
+          "status-badge " + (selStP.value || GT.calcStatus(student).key);
       });
       tdStP.appendChild(selStP);
       tr.appendChild(tdStP);
@@ -582,15 +594,22 @@
     [...selMedalha.options].forEach((o) => {
       o.textContent = mlO[o.value] || o.value;
     });
+    const medValO = student.medalhaManual || (rankInfo ? rankInfo.medalha : "");
+    selMedalha.className = "medal-badge" + (medValO ? " medal-" + medValO : "");
+    selMedalha.addEventListener("change", () => {
+      selMedalha.className =
+        "medal-badge" + (selMedalha.value ? " medal-" + selMedalha.value : "");
+    });
     tdMedalha.appendChild(selMedalha);
     tr.appendChild(tdMedalha);
 
     // Status Final (editável)
     const tdStatus = document.createElement("td");
     tdStatus.className = "status-cell";
+    const stAutoKey = student.statusManual || GT.calcStatus(student).key;
     const selStatus = makeSelect(
       ["", "aprovado", "participacao", "vinculacao", "reprovado-falta"],
-      student.statusManual || GT.calcStatus(student).key,
+      stAutoKey,
       (v) => update("statusManual", v),
     );
     const slO = {
@@ -602,6 +621,11 @@
     };
     [...selStatus.options].forEach((o) => {
       o.textContent = slO[o.value] || o.value;
+    });
+    selStatus.className = "status-badge " + stAutoKey;
+    selStatus.addEventListener("change", () => {
+      selStatus.className =
+        "status-badge " + (selStatus.value || GT.calcStatus(student).key);
     });
     tdStatus.appendChild(selStatus);
     tr.appendChild(tdStatus);
