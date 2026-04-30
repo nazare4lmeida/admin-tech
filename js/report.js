@@ -293,28 +293,32 @@
     );
     if (todos.length === 0) return "";
 
+    // Recalcula o ranking com TODOS os alunos de TODAS as formações juntos
     const rankMap = GT.calcRanking(todos);
-    if (rankMap.size === 0) return "";
+    if (rankMap.size === 0 && !todos.some((s) => s.medalhaManual)) return "";
 
-    // Conta medalhas — usa medalhaManual se existir, senão usa o calculado
     const contagem = {};
     GT.FORMATIONS.forEach((f) => {
       contagem[f.id] = { ouro: 0, prata: 0, bronze: 0, total: 0 };
     });
 
-    // Primeiro aplica medalhas manuais (sobrescrevem o ranking automático)
-    const rankMapFinal = new Map(rankMap);
+    // Conta medalhas manuais primeiro (têm prioridade)
+    const jaContados = new Set();
     todos.forEach((s) => {
       if (s.medalhaManual) {
-        rankMapFinal.set(s.id, {
-          medalha: s.medalhaManual,
-          media: GT.calcNotaMedia(s) || 0,
-        });
+        const fid = s.formacao;
+        if (contagem[fid]) {
+          contagem[fid][s.medalhaManual]++;
+          contagem[fid].total++;
+          jaContados.add(s.id);
+        }
       }
     });
 
-    rankMapFinal.forEach((info, _id) => {
-      const fid = todos.find((s) => s.id === _id)?.formacao;
+    // Depois conta as automáticas (apenas quem não tem manual)
+    rankMap.forEach((info, id) => {
+      if (jaContados.has(id)) return;
+      const fid = todos.find((s) => s.id === id)?.formacao;
       if (fid && contagem[fid]) {
         contagem[fid][info.medalha]++;
         contagem[fid].total++;
