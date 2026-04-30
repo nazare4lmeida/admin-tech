@@ -673,9 +673,9 @@
     }
 
     const VAGAS = {
-      ouro: calcVagas(TOTAIS_MEDALHA.ouro),
-      prata: calcVagas(TOTAIS_MEDALHA.prata),
-      bronze: calcVagas(TOTAIS_MEDALHA.bronze),
+      ouro:   { "fullstack": 3, "ia-generativa": 3, "ia-soft-skills": 2, "presencial-ia-gen": 1, "presencial-ia-soft": 1 },
+      prata:  { "fullstack": 6, "ia-generativa": 4, "ia-soft-skills": 3, "presencial-ia-gen": 1, "presencial-ia-soft": 1 },
+      bronze: { "fullstack": 11, "ia-generativa": 9, "ia-soft-skills": 3, "presencial-ia-gen": 1, "presencial-ia-soft": 1 },
     };
 
     // Função de ordenação por nota > presença > progresso
