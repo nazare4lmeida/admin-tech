@@ -317,6 +317,24 @@
         student.projetoFinal === "Entregou – Aprovado" &&
         parseFloat(student.notaProjetoFinal || 0) >= 7;
       projectApproved = (frontOk && backOk) || finalOk;
+    } else if (
+      student.formacao &&
+      (student.formacao.startsWith("presencial") ||
+        student.formacao.startsWith("turma_"))
+    ) {
+      // Presencial — regras próprias
+      const notaOk = parseFloat(student.notaProjetoFinal || 0) >= 7;
+
+      // Conclusão: presença >= 75% + nota >= 7
+      if (presencaOk && notaOk)
+        return { key: "aprovado", label: "Certificado de Conclusão" };
+
+      // Participação: nota >= 7 (mesmo sem presença mínima)
+      if (notaOk)
+        return { key: "participacao", label: "Certificado de Participação" };
+
+      // Sem projeto aprovado ou sem nota — vinculação
+      return { key: "vinculacao", label: "Certificado de Vinculação" };
     } else {
       // IA Generativa e IA + Soft Skills
       const projetoOk =
