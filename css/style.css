@@ -925,15 +925,27 @@ tr:has(.row-checkbox:checked) {
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-  gap: 2px !important; /* Aumentei bem aqui para ver a separação */
-  padding: 4px 0px !important; /* Padding maior para forçar o respiro */
-  box-sizing: border-box !important;
+
+  /* Gap maior para o ícone não atropelar o texto */
+  gap: 6px !important;
+
+  /* Voltando o padding lateral para o texto não colar na borda */
+  padding: 4px 12px !important;
+
+  /* Importante para não sumir com o botão de fechar/editar ao lado */
+  margin-right: 8px;
+
   border-radius: 20px;
   font-size: 11px;
   font-weight: 800;
   white-space: nowrap;
-  line-height: 1.2; /* Um pouco mais de altura para não cortar o til */
-  width: fit-content; /* Garante que a caixa se ajuste ao conteúdo novo */
+  line-height: 1.2;
+
+  /* Largura flexível mas com base segura */
+  width: auto !important;
+  min-width: 140px;
+
+  box-sizing: border-box !important;
 }
 
 /* --- MODO DARK (Padrão) --- */
