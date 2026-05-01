@@ -924,28 +924,30 @@ tr:has(.row-checkbox:checked) {
 .status-badge {
   display: inline-flex !important;
   align-items: center !important;
-  justify-content: center !important;
-
-  /* Gap maior para o ícone não atropelar o texto */
-  gap: 6px !important;
-
-  /* Voltando o padding lateral para o texto não colar na borda */
-  padding: 4px 12px !important;
-
-  /* Importante para não sumir com o botão de fechar/editar ao lado */
-  margin-right: 8px;
-
-  border-radius: 20px;
+  
+  /* Aumentamos muito o padding da direita (28px) para abrir espaço para o ícone */
+  padding: 4px 28px 4px 12px !important; 
+  
+  /* Removemos qualquer trava de largura para a caixa poder expandir */
+  width: auto !important;
+  min-width: fit-content !important; 
+  
+  position: relative; /* Garante que o ícone interno se oriente por aqui */
+  border-radius: 8px; /* Ficou melhor com 8px no seu print do que 20px */
   font-size: 11px;
   font-weight: 800;
   white-space: nowrap;
   line-height: 1.2;
-
-  /* Largura flexível mas com base segura */
-  width: auto !important;
-  min-width: 140px;
-
   box-sizing: border-box !important;
+}
+
+/* Se o ícone de check for um elemento dentro da badge, 
+   garantimos que ele não fique em cima do texto */
+.status-badge i, 
+.status-badge svg,
+.status-badge .icon {
+  margin-left: 8px !important;
+  position: static !important; /* Força o ícone a seguir o fluxo do texto */
 }
 
 /* --- MODO DARK (Padrão) --- */
