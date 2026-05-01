@@ -922,15 +922,18 @@ tr:has(.row-checkbox:checked) {
 
 /* STATUS BADGES — Ajustados para melhor visibilidade e contraste */
 .status-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 2px 10px; /* Ajuste leve no respiro */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px !important; /* Aumentei bem aqui para ver a separação */
+  padding: 4px 0px !important; /* Padding maior para forçar o respiro */
+  box-sizing: border-box !important;
   border-radius: 20px;
-  font-size: 10px;
-  font-weight: 700; /* Aumentei um pouco o peso para o texto "saltar" mais */
+  font-size: 11px;
+  font-weight: 800;
   white-space: nowrap;
-  transition: all 0.2s ease; /* Suaviza se houver hover */
+  line-height: 1.2; /* Um pouco mais de altura para não cortar o til */
+  width: fit-content; /* Garante que a caixa se ajuste ao conteúdo novo */
 }
 
 /* --- MODO DARK (Padrão) --- */
@@ -2512,67 +2515,67 @@ tr:has(.row-checkbox:checked) {
 /* --- Estilização dos campos do Modal (Nova Turma) --- */
 
 .modal-fields {
-    display: flex;
-    flex-direction: column;
-    gap: 16px; /* Espaçamento entre os blocos de pergunta */
+  display: flex;
+  flex-direction: column;
+  gap: 16px; /* Espaçamento entre os blocos de pergunta */
 }
 
 .modal-field {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
 /* Estilo dos Labels (Textos acima dos campos) */
 .modal-field label {
-    font-size: 11px;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: #6b7280; /* Tom cinza profissional */
-    letter-spacing: 0.5px;
-    margin-left: 2px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #6b7280; /* Tom cinza profissional */
+  letter-spacing: 0.5px;
+  margin-left: 2px;
 }
 
 /* Estilização Geral de Inputs e Selects (Baseado na Imagem 2) */
 .modal-field input[type="text"],
 .modal-field select {
-    width: 100%;
-    padding: 10px 12px;
-    background-color: #f1f4f9; /* Fundo cinza/azul claro */
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    font-size: 14px;
-    color: #374151;
-    transition: all 0.2s ease;
-    box-sizing: border-box; /* Garante que o padding não estoure a largura */
+  width: 100%;
+  padding: 10px 12px;
+  background-color: #f1f4f9; /* Fundo cinza/azul claro */
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  color: #374151;
+  transition: all 0.2s ease;
+  box-sizing: border-box; /* Garante que o padding não estoure a largura */
 }
 
 /* Efeito de Foco (quando clica na caixa) */
 .modal-field input[type="text"]:focus,
 .modal-field select:focus {
-    outline: none;
-    border-color: #6366f1; /* Cor primária */
-    background-color: #ffffff;
-    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+  outline: none;
+  border-color: #6366f1; /* Cor primária */
+  background-color: #ffffff;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 /* Estilo específico para o Select (para parecer com a Imagem 2) */
 .modal-field select {
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='C19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 12px center;
-    background-size: 16px;
-    padding-right: 40px;
-    cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='C19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+  cursor: pointer;
 }
 
 /* Ajuste para o campo de Cor Hexadecimal */
 #nfColor {
-    flex: 1;
+  flex: 1;
 }
 
 /* Placeholder (texto de exemplo dentro da caixa) */
 .modal-field input::placeholder {
-    color: #9ca3af;
+  color: #9ca3af;
 }
