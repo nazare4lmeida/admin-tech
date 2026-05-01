@@ -927,7 +927,7 @@ tr:has(.row-checkbox:checked) {
   gap: 4px;
   padding: 2px 10px; /* Ajuste leve no respiro */
   border-radius: 20px;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700; /* Aumentei um pouco o peso para o texto "saltar" mais */
   white-space: nowrap;
   transition: all 0.2s ease; /* Suaviza se houver hover */
