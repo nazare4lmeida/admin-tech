@@ -632,7 +632,7 @@
   // Vagas fixas por formação e medalha:
   //   Ouro(10):   fullstack=5, ia-generativa=3, ia-soft-skills=2
   //   Prata(15):  fullstack=7, ia-generativa=5, ia-soft-skills=3
-  //   Bronze(25): fullstack=12, ia-generativa=10, ia-soft-skills=3
+  //   Bronze(25): fullstack=12, ia-generativa=8, ia-soft-skills=4
   // Sobras redistribuídas proporcionalmente entre as demais formações
   // Critérios de ordenação: nota média > presença > progresso
   // ============================================================
@@ -655,8 +655,8 @@
       },
       bronze: {
         fullstack: 11,
-        "ia-generativa": 9,
-        "ia-soft-skills": 3,
+        "ia-generativa": 8,
+        "ia-soft-skills": 4,
         "presencial-ia-gen": 1,
         "presencial-ia-soft": 1,
       },
