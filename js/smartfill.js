@@ -49,10 +49,12 @@
     const multiEl = document.getElementById("fillModalMultiNotice");
     const subtitleEl = document.getElementById("fillModalSubtitle");
 
-    const allFields = [
-      ...GT.UNIVERSAL_FIELDS,
-      ...(formation.extra || []).flatMap((ek) => GT.EXTRA_FIELDS[ek] || []),
-    ];
+    const allFields = formation.presencial
+      ? GT.EXTRA_FIELDS["presencial"] || []
+      : [
+          ...GT.UNIVERSAL_FIELDS,
+          ...(formation.extra || []).flatMap((ek) => GT.EXTRA_FIELDS[ek] || []),
+        ];
 
     const isMulti = !student && selectedIds && selectedIds.length > 1;
     const isSingle = !!student;
