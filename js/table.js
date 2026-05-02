@@ -673,10 +673,14 @@
     }
 
     if (_searchTerm) {
-      const q = _searchTerm.toLowerCase();
-      students = students.filter((s) =>
-        (s.nome || "").toLowerCase().includes(q),
-      );
+      const normalizar = (str) =>
+        (str || "")
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9 ]/g, "");
+      const q = normalizar(_searchTerm);
+      students = students.filter((s) => normalizar(s.nome).includes(q));
     }
     if (_filterStatus) {
       students = students.filter((s) => GT.calcStatus(s).key === _filterStatus);
