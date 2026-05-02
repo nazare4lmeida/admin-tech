@@ -87,6 +87,7 @@
         <th style="width:32px"></th>
         <th style="width:36px">#</th>
         <th style="min-width:170px">Nome do Aluno</th>
+           <th style="min-width:140px">Formação</th>
         <th>Sede</th>
         <th>Frequência (%)</th>
         <th>Nota Final</th>
