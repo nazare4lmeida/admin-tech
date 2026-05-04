@@ -43,7 +43,11 @@
     await Table.updateAllBadges();
     const hashId = window.location.hash.replace("#", "");
     const validId = GT.FORMATIONS.find((f) => f.id === hashId);
-    switchFormation(validId ? hashId : "fullstack");
+    if (hashId === "dashboard" || !hashId) {
+      showDashboardView();
+    } else {
+      switchFormation(validId ? hashId : "fullstack");
+    }
     startRealtime();
   }
 
@@ -86,11 +90,27 @@
     _activeView = "report";
     tableView.classList.add("hidden-view");
     reportView.classList.add("active");
+    const dv = document.getElementById("dashboardView");
+    if (dv) dv.style.display = "none";
     document
       .querySelectorAll(".nav-item[data-formation]")
       .forEach((btn) => btn.classList.remove("active"));
     document.getElementById("btnReport")?.classList.add("active");
+    document.getElementById("btnDashboard")?.classList.remove("active");
     Report.render();
+    closeSidebar();
+  }
+
+  function showDashboardView() {
+    _activeView = "dashboard";
+    tableView.classList.add("hidden-view");
+    reportView.classList.remove("active");
+    const dv = document.getElementById("dashboardView");
+    if (dv) dv.style.display = "";
+    document.querySelectorAll(".nav-item[data-formation]").forEach(btn => btn.classList.remove("active"));
+    document.getElementById("btnReport")?.classList.remove("active");
+    document.getElementById("btnDashboard")?.classList.add("active");
+    Dashboard.render();
     closeSidebar();
   }
 
@@ -152,6 +172,8 @@
   function switchFormation(id) {
     _activeFormation = id;
     window.location.hash = id;
+    const dv = document.getElementById("dashboardView");
+    if (dv) dv.style.display = "none";
     showTableView();
     document.querySelectorAll(".nav-item[data-formation]").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.formation === id);
