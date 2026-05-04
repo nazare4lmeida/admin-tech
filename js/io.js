@@ -525,52 +525,74 @@
     toast("Preparando exportação Top 50...", "info");
     try {
       const allStudents = await GT.getAllStudentsWithStatus();
-      const rankMap = window._rankMapForModal || new Map();
+
+      // Recalcula o ranking global com TODOS os alunos de TODAS as formações
+      const rankMap = GT.calcRanking(allStudents);
 
       // Filtra só quem tem medalha (automática ou manual)
-      const top50 = allStudents.filter(s => {
-        const manual = s.medalhaManual;
-        const auto   = rankMap.get(s.id)?.medalha;
-        return manual || auto;
-      }).map(s => ({
-        ...s,
-        _medalha: s.medalhaManual || rankMap.get(s.id)?.medalha || "",
-        _media:   GT.calcNotaMedia(s),
-      })).sort((a, b) => {
-        const ordem = { ouro: 1, prata: 2, bronze: 3 };
-        if (ordem[a._medalha] !== ordem[b._medalha]) return (ordem[a._medalha]||9) - (ordem[b._medalha]||9);
-        return (b._media || 0) - (a._media || 0);
-      });
+      const top50 = allStudents
+        .filter((s) => {
+          return s.medalhaManual || rankMap.get(s.id)?.medalha;
+        })
+        .map((s) => ({
+          ...s,
+          _medalha: s.medalhaManual || rankMap.get(s.id)?.medalha || "",
+          _media: GT.calcNotaMedia(s),
+        }))
+        .sort((a, b) => {
+          const ordem = { ouro: 1, prata: 2, bronze: 3 };
+          if (ordem[a._medalha] !== ordem[b._medalha])
+            return (ordem[a._medalha] || 9) - (ordem[b._medalha] || 9);
+          return (b._media || 0) - (a._media || 0);
+        });
 
-      if (top50.length === 0) { toast("Nenhum aluno no Top 50.", "info"); return; }
+      if (top50.length === 0) {
+        toast("Nenhum aluno no Top 50.", "info");
+        return;
+      }
 
       if (format === "xlsx") {
         const rows = top50.map((s, i) => ({
-          "#":           i + 1,
-          "Medalha":     ({ ouro: "🥇 Ouro", prata: "🥈 Prata", bronze: "🥉 Bronze" }[s._medalha] || s._medalha),
-          "Nome":        s.nome || "",
-          "Formação":    s._formationLabel || "",
-          "Nota Final":  s._media != null ? Number(s._media.toFixed(2)) : "",
-          "Presença (%)":s.presencaFinalPlat ?? "",
-          "Progresso (%)":s.progressoCurso ?? "",
-          "Status Final":s._status.label,
+          "#": i + 1,
+          Medalha:
+            { ouro: "🥇 Ouro", prata: "🥈 Prata", bronze: "🥉 Bronze" }[
+              s._medalha
+            ] || s._medalha,
+          Nome: s.nome || "",
+          Formação: s._formationLabel || "",
+          "Nota Final": s._media != null ? Number(s._media.toFixed(2)) : "",
+          "Presença (%)": s.presencaFinalPlat ?? "",
+          "Progresso (%)": s.progressoCurso ?? "",
+          "Status Final": s._status.label,
         }));
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.json_to_sheet(rows);
-        ws["!cols"] = [{wch:4},{wch:12},{wch:32},{wch:20},{wch:12},{wch:14},{wch:14},{wch:26}];
+        ws["!cols"] = [
+          { wch: 4 },
+          { wch: 12 },
+          { wch: 32 },
+          { wch: 20 },
+          { wch: 12 },
+          { wch: 14 },
+          { wch: 14 },
+          { wch: 26 },
+        ];
         XLSX.utils.book_append_sheet(wb, ws, "Top 50");
         XLSX.writeFile(wb, "GeracaoTech_Top50.xlsx");
         toast("Top 50 exportado!", "success");
-
       } else {
         const STATUS_COLORS = {
-          aprovado:         { bg: "#d1fae5", text: "#065f46" },
-          participacao:     { bg: "#dbeafe", text: "#1e3a8a" },
-          vinculacao:       { bg: "#ede9fe", text: "#4c1d95" },
-          "reprovado-falta":{ bg: "#fee2e2", text: "#7f1d1d" },
-          vazio:            { bg: "#f3f4f6", text: "#374151" },
+          aprovado: { bg: "#d1fae5", text: "#065f46" },
+          participacao: { bg: "#dbeafe", text: "#1e3a8a" },
+          vinculacao: { bg: "#ede9fe", text: "#4c1d95" },
+          "reprovado-falta": { bg: "#fee2e2", text: "#7f1d1d" },
+          vazio: { bg: "#f3f4f6", text: "#374151" },
         };
-        const MEDAL_COLORS = { ouro: "#fbbf24", prata: "#cbd5e1", bronze: "#d4956a" };
+        const MEDAL_COLORS = {
+          ouro: "#fbbf24",
+          prata: "#cbd5e1",
+          bronze: "#d4956a",
+        };
 
         let html = `<!DOCTYPE html><html><head><meta charset="UTF-8">
           <title>Top 50 — Geração Tech</title>
@@ -581,7 +603,6 @@
             table{border-collapse:collapse;width:100%;font-size:12px}
             th{background:#1e293b;color:#fff;padding:8px 10px;text-align:left}
             td{padding:6px 10px;border-bottom:1px solid #eee}
-            .medal{font-weight:700}
           </style></head><body>
           <h1>🏆 Top 50 — Geração Tech</h1>
           <p>Exportado em ${new Date().toLocaleDateString("pt-BR")} · ${top50.length} alunos premiados</p>
@@ -591,26 +612,31 @@
           </tr></thead><tbody>`;
 
         top50.forEach((s, i) => {
-          const c  = STATUS_COLORS[s._status.key] || STATUS_COLORS.vazio;
+          const c = STATUS_COLORS[s._status?.key] || STATUS_COLORS.vazio;
           const mc = MEDAL_COLORS[s._medalha] || "#888";
-          const ml = { ouro: "🥇 Ouro", prata: "🥈 Prata", bronze: "🥉 Bronze" }[s._medalha] || s._medalha;
+          const ml =
+            { ouro: "🥇 Ouro", prata: "🥈 Prata", bronze: "🥉 Bronze" }[
+              s._medalha
+            ] || s._medalha;
           html += `<tr>
-            <td style="background:${c.bg};color:${c.text}">${i+1}</td>
+            <td style="background:${c.bg};color:${c.text}">${i + 1}</td>
             <td style="background:${c.bg};color:${mc};font-weight:700">${ml}</td>
-            <td style="background:${c.bg};color:${c.text};font-weight:600">${s.nome||""}</td>
-            <td style="background:${c.bg};color:${c.text}">${s._formationLabel||""}</td>
-            <td style="background:${c.bg};color:${c.text};text-align:center">${s._media!=null?s._media.toFixed(2):""}</td>
-            <td style="background:${c.bg};color:${c.text};text-align:center">${s.presencaFinalPlat??""}</td>
-            <td style="background:${c.bg};color:${c.text};text-align:center">${s.progressoCurso??""}</td>
-            <td style="background:${c.bg};color:${c.text}">${s._status.label}</td>
+            <td style="background:${c.bg};color:${c.text};font-weight:600">${s.nome || ""}</td>
+            <td style="background:${c.bg};color:${c.text}">${s._formationLabel || ""}</td>
+            <td style="background:${c.bg};color:${c.text};text-align:center">${s._media != null ? s._media.toFixed(2) : ""}</td>
+            <td style="background:${c.bg};color:${c.text};text-align:center">${s.presencaFinalPlat ?? ""}</td>
+            <td style="background:${c.bg};color:${c.text};text-align:center">${s.progressoCurso ?? ""}</td>
+            <td style="background:${c.bg};color:${c.text}">${s._status?.label || ""}</td>
           </tr>`;
         });
 
         html += `</tbody></table></body></html>`;
         const blob = new Blob([html], { type: "text/html;charset=utf-8" });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement("a");
-        a.href = url; a.download = "GeracaoTech_Top50.html"; a.click();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "GeracaoTech_Top50.html";
+        a.click();
         URL.revokeObjectURL(url);
         toast("Top 50 HTML exportado!", "success");
       }
@@ -619,6 +645,11 @@
       toast("Erro ao exportar Top 50: " + err.message, "error");
     }
   }
-
-  window.IO = { doImport, openExportModal, doExportDirect, doExportHtml, doExportTop50 };
+  window.IO = {
+    doImport,
+    openExportModal,
+    doExportDirect,
+    doExportHtml,
+    doExportTop50,
+  };
 })();
