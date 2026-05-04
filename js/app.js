@@ -37,7 +37,6 @@
     loginPage.classList.add("hidden");
     appPage.classList.remove("hidden");
     updateSupabaseIndicator();
-    // Load dynamic formations before rendering sidebar
     await GT.loadDynamicFormations();
     renderSidebarFormations();
     await Table.updateAllBadges();
@@ -51,7 +50,6 @@
     startRealtime();
   }
 
-  // ── Render sidebar formation nav dynamically ──────────────────
   function renderSidebarFormations() {
     const nav = document.getElementById("formationNav");
     if (!nav) return;
@@ -67,17 +65,27 @@
   }
 
   // ============================================================
-  // VIEWS — tabela vs relatório
+  // VIEWS
   // ============================================================
   const tableView = document.getElementById("tableView");
   const reportView = document.getElementById("reportView");
   let _activeView = "table";
 
+  function _hideDashboard() {
+    const dv = document.getElementById("dashboardView");
+    if (dv) {
+      dv.style.display = "none";
+      dv.classList.remove("active");
+    }
+  }
+
   function showTableView() {
     _activeView = "table";
     tableView.classList.remove("hidden-view");
     reportView.classList.remove("active");
+    _hideDashboard();
     document.getElementById("btnReport")?.classList.remove("active");
+    document.getElementById("btnDashboard")?.classList.remove("active");
     document.querySelectorAll(".nav-item[data-formation]").forEach((btn) => {
       btn.classList.toggle(
         "active",
@@ -90,8 +98,7 @@
     _activeView = "report";
     tableView.classList.add("hidden-view");
     reportView.classList.add("active");
-const dv = document.getElementById("dashboardView");
-    if (dv) { dv.style.display = "none"; dv.classList.remove("active"); }
+    _hideDashboard();
     document
       .querySelectorAll(".nav-item[data-formation]")
       .forEach((btn) => btn.classList.remove("active"));
@@ -101,16 +108,22 @@ const dv = document.getElementById("dashboardView");
     closeSidebar();
   }
 
- function showDashboardView() {
+  function showDashboardView() {
     _activeView = "dashboard";
     tableView.classList.add("hidden-view");
     reportView.classList.remove("active");
     const dv = document.getElementById("dashboardView");
-    if (dv) { dv.style.display = ""; dv.classList.add("active"); }
-    document.querySelectorAll(".nav-item[data-formation]").forEach(btn => btn.classList.remove("active"));
+    if (dv) {
+      dv.style.display = "";
+      dv.classList.add("active");
+    }
+    document
+      .querySelectorAll(".nav-item[data-formation]")
+      .forEach((btn) => btn.classList.remove("active"));
     document.getElementById("btnReport")?.classList.remove("active");
     document.getElementById("btnDashboard")?.classList.add("active");
-    Dashboard.render();
+    window.location.hash = "dashboard";
+    if (typeof Dashboard !== "undefined") Dashboard.render();
     closeSidebar();
   }
 
@@ -172,8 +185,6 @@ const dv = document.getElementById("dashboardView");
   function switchFormation(id) {
     _activeFormation = id;
     window.location.hash = id;
-const dv = document.getElementById("dashboardView");
-    if (dv) { dv.style.display = "none"; dv.classList.remove("active"); }
     showTableView();
     document.querySelectorAll(".nav-item[data-formation]").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.formation === id);
@@ -182,10 +193,22 @@ const dv = document.getElementById("dashboardView");
     closeSidebar();
   }
 
-  // Relatório
   document
     .getElementById("btnReport")
     .addEventListener("click", showReportView);
+  document
+    .getElementById("btnDashboard")
+    ?.addEventListener("click", showDashboardView);
+
+  // ── Top 50 export ──────────────────────────────────────────────
+  document.getElementById("exportTop50Xlsx")?.addEventListener("click", () => {
+    document.getElementById("exportModal")?.classList.add("hidden");
+    IO.doExportTop50("xlsx");
+  });
+  document.getElementById("exportTop50Html")?.addEventListener("click", () => {
+    document.getElementById("exportModal")?.classList.add("hidden");
+    IO.doExportTop50("html");
+  });
 
   // ── Nova Turma ────────────────────────────────────────────────
   document
@@ -242,7 +265,6 @@ const dv = document.getElementById("dashboardView");
       </div>`;
     document.body.appendChild(overlay);
 
-    // Sync color picker ↔ text
     const picker = document.getElementById("nfColorPicker");
     const colorTxt = document.getElementById("nfColor");
     picker.addEventListener("input", () => {
@@ -276,7 +298,6 @@ const dv = document.getElementById("dashboardView");
         close();
         renderSidebarFormations();
         await Table.updateAllBadges();
-        // Show SQL to copy
         const sqlOverlay = document.createElement("div");
         sqlOverlay.className = "modal-overlay";
         sqlOverlay.innerHTML = `
@@ -303,14 +324,17 @@ const dv = document.getElementById("dashboardView");
     };
     closeSidebar();
   }
+
   document
     .getElementById("btnRefreshReport")
     ?.addEventListener("click", () => Report.render());
   document
     .getElementById("menuBtnReport")
     ?.addEventListener("click", openSidebar);
+  document
+    .getElementById("menuBtnDashboard")
+    ?.addEventListener("click", openSidebar);
   document.getElementById("btnPrintReport")?.addEventListener("click", () => {
-    // Delegado ao report.js via evento customizado
     document.dispatchEvent(new CustomEvent("gt:printReport"));
   });
 
@@ -405,10 +429,12 @@ const dv = document.getElementById("dashboardView");
     .addEventListener("click", async () => {
       const ids = Table.getSelectedIds();
       if (ids.length === 0) return;
-      const confirmed = confirm(
-        `Excluir ${ids.length} aluno(s) selecionado(s)?\n\nEssa ação não pode ser desfeita.`,
-      );
-      if (!confirmed) return;
+      if (
+        !confirm(
+          `Excluir ${ids.length} aluno(s) selecionado(s)?\n\nEssa ação não pode ser desfeita.`,
+        )
+      )
+        return;
       try {
         await GT.deleteMultiple(_activeFormation, ids);
         toast(`${ids.length} aluno(s) excluído(s).`, "success");
@@ -436,8 +462,8 @@ const dv = document.getElementById("dashboardView");
       _fillAssistantEnabled = fillToggle.checked;
       Table.setFillMode(_fillAssistantEnabled);
       const hint = document.querySelector(".fill-hint");
-      if (hint) hint.style.opacity = _fillAssistantEnabled ? "1" : "0.5";
       const fillBtn = document.getElementById("btnBulkFill");
+      if (hint) hint.style.opacity = _fillAssistantEnabled ? "1" : "0.5";
       if (fillBtn)
         fillBtn.style.display = _fillAssistantEnabled ? "inline-flex" : "none";
     });
@@ -455,33 +481,32 @@ const dv = document.getElementById("dashboardView");
   window.getActiveFormation = () => _activeFormation;
 
   // ============================================================
-  // THEME — funciona nas duas views
+  // THEME
   // ============================================================
   function applyTheme(theme) {
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("gt_theme", theme);
     const label = theme === "dark" ? "☀️ Tema" : "🌙 Tema";
-    const btn1 = document.getElementById("themeToggle");
-    const btn2 = document.getElementById("themeToggleReport");
-    if (btn1) btn1.textContent = label;
-    if (btn2) btn2.textContent = label;
+    ["themeToggle", "themeToggleReport", "themeToggleDashboard"].forEach(
+      (id) => {
+        const btn = document.getElementById(id);
+        if (btn) btn.textContent = label;
+      },
+    );
   }
 
-  document.addEventListener("DOMContentLoaded", function () {
+  document.addEventListener("DOMContentLoaded", () => {
     const saved = localStorage.getItem("gt_theme") || "dark";
     applyTheme(saved);
-    document.getElementById("themeToggle")?.addEventListener("click", () => {
-      const current =
-        document.documentElement.getAttribute("data-theme") || "dark";
-      applyTheme(current === "dark" ? "light" : "dark");
-    });
-    document
-      .getElementById("themeToggleReport")
-      ?.addEventListener("click", () => {
-        const current =
-          document.documentElement.getAttribute("data-theme") || "dark";
-        applyTheme(current === "dark" ? "light" : "dark");
-      });
+    ["themeToggle", "themeToggleReport", "themeToggleDashboard"].forEach(
+      (id) => {
+        document.getElementById(id)?.addEventListener("click", () => {
+          const current =
+            document.documentElement.getAttribute("data-theme") || "dark";
+          applyTheme(current === "dark" ? "light" : "dark");
+        });
+      },
+    );
   });
 
   // ============================================================
@@ -491,45 +516,58 @@ const dv = document.getElementById("dashboardView");
 
   function startRealtime() {
     if (!window.SB || !SB.enabled()) return;
+    const url = SB._url;
+    const key = SB._key;
+    if (!url || !key) return;
     const tables = [
       { table: "alunos_fullstack", fid: "fullstack" },
       { table: "alunos_ia_generativa", fid: "ia-generativa" },
       { table: "alunos_ia_soft_skills", fid: "ia-soft-skills" },
     ];
-    const wsUrl =
-      SB._url.replace("https://", "wss://") +
-      `/realtime/v1/websocket?apikey=${SB._key}&vsn=1.0.0`;
-    tables.forEach(({ table, fid }) =>
-      startRealtimeForTable(table, fid, wsUrl),
-    );
+    try {
+      const wsUrl =
+        url.replace("https://", "wss://") +
+        `/realtime/v1/websocket?apikey=${key}&vsn=1.0.0`;
+      tables.forEach(({ table, fid }) =>
+        startRealtimeForTable(table, fid, wsUrl),
+      );
+    } catch (err) {
+      console.warn("Realtime init error:", err);
+    }
   }
 
   function startRealtimeForTable(table, fid, wsUrl) {
-    const ws = new WebSocket(wsUrl);
-    _wsConnections.push(ws);
-    ws.onopen = () =>
-      ws.send(
-        JSON.stringify({
-          topic: `realtime:public:${table}`,
-          event: "phx_join",
-          payload: {},
-          ref: "1",
-        }),
-      );
-    ws.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-      if (["INSERT", "UPDATE", "DELETE"].includes(msg.payload?.type)) {
-        if (fid === _activeFormation && _activeView === "table")
-          Table.render(_activeFormation);
-        Table.updateBadge(fid);
-      }
-    };
-    ws.onerror = (err) => console.warn("Realtime WS error:", err);
-    ws.onclose = () => {
-      setTimeout(() => {
-        if (Auth.isLoggedIn()) startRealtimeForTable(table, fid, wsUrl);
-      }, 3000);
-    };
+    try {
+      const ws = new WebSocket(wsUrl);
+      _wsConnections.push(ws);
+      ws.onopen = () =>
+        ws.send(
+          JSON.stringify({
+            topic: `realtime:public:${table}`,
+            event: "phx_join",
+            payload: {},
+            ref: "1",
+          }),
+        );
+      ws.onmessage = (e) => {
+        try {
+          const msg = JSON.parse(e.data);
+          if (["INSERT", "UPDATE", "DELETE"].includes(msg.payload?.type)) {
+            if (fid === _activeFormation && _activeView === "table")
+              Table.render(_activeFormation);
+            Table.updateBadge(fid);
+          }
+        } catch {}
+      };
+      ws.onerror = (err) => console.warn("Realtime WS error:", err);
+      ws.onclose = () => {
+        setTimeout(() => {
+          if (Auth.isLoggedIn()) startRealtimeForTable(table, fid, wsUrl);
+        }, 3000);
+      };
+    } catch (err) {
+      console.warn("WebSocket error:", err);
+    }
   }
 
   function stopRealtime() {
@@ -546,6 +584,7 @@ const dv = document.getElementById("dashboardView");
     showLogin();
   }
 })();
+
 // ============================================================
 // COMPACT MODE TOGGLE
 // ============================================================
@@ -564,7 +603,6 @@ const dv = document.getElementById("dashboardView");
       ?.addEventListener("click", () => {
         applyCompact(!_compactEnabled);
       });
-    // Restaura preferência salva
     if (_compactEnabled) {
       Table.setCompactMode(true);
       const btn = document.getElementById("btnCompactToggle");
