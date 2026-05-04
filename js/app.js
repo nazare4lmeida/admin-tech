@@ -157,12 +157,18 @@
     inp.type = inp.type === "password" ? "text" : "password";
   });
 
-  function handleLogin() {
-    const email = document.getElementById("loginEmail").value;
-    const code = document.getElementById("loginCode").value;
+ async function handleLogin() {
+    const email = document.getElementById("loginEmail").value.trim();
+    const code  = document.getElementById("loginCode").value;
     const errEl = document.getElementById("loginError");
+    const btn   = document.getElementById("btnLogin");
     errEl.classList.add("hidden");
-    if (Auth.login(email, code)) {
+    btn.disabled = true;
+    btn.textContent = "Entrando...";
+    const ok = await Auth.loginWithSupabase(email, code);
+    btn.disabled = false;
+    btn.textContent = "Entrar no Sistema";
+    if (ok) {
       showApp();
     } else {
       errEl.classList.remove("hidden");

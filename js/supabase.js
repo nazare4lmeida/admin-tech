@@ -31,7 +31,8 @@
       method,
       headers: {
         apikey: SUPABASE_ANON_KEY,
-        Authorization: "Bearer " + SUPABASE_ANON_KEY,
+                Authorization: "Bearer " + (Auth.getToken() || SUPABASE_ANON_KEY),
+
         "Content-Type": "application/json",
         Prefer: prefer,
       },

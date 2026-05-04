@@ -1,63 +1,38 @@
-/**
- * auth.js — Authentication module
- * Credentials are obfuscated (not stored as plaintext)
- */
-
+// auth.js — Autenticação via Supabase Auth
 (function () {
-  'use strict';
-
-  // Credentials stored as Base64-encoded segments, never as plaintext
-  // Assembled at runtime only during validation — not exposed in DOM
-  const _seg = [
-    'Y29udGF0b0BnZXJhY2Fv',
-    'dGVjaC5pZWwtY2Uub3Jn',
-    'LmJy'
-  ];
-  const _codeSegs = [
-    'R3RlY2hSZWMt',
-    'QWRtaW4t',
-    'MjAyNiE='
-  ];
-
-  function _resolve(segs) {
-    try {
-      return atob(segs.join(''));
-    } catch {
-      return '';
-    }
-  }
-
-  function _checkCredentials(email, code) {
-    const validEmail = _resolve(_seg);
-    const validCode  = _resolve(_codeSegs);
-    return email.trim() === validEmail && code === validCode;
-  }
-
-  const SK = 'gt_session_v1';
-
   window.Auth = {
     isLoggedIn() {
-      try {
-        const s = localStorage.getItem(SK);
-        if (!s) return false;
-        const { t, h } = JSON.parse(s);
-        // Basic integrity check: hash must match expected derivation
-        return h === btoa('gt_' + t).slice(0, 16);
-      } catch {
-        return false;
-      }
+      return !!localStorage.getItem("sb_session");
     },
-
-    login(email, code) {
-      if (!_checkCredentials(email, code)) return false;
-      const t = Date.now().toString(36);
-      const h = btoa('gt_' + t).slice(0, 16);
-      localStorage.setItem(SK, JSON.stringify({ t, h }));
+    async loginWithSupabase(email, password) {
+      const url = (window.ENV?.SUPABASE_URL || "") + "/auth/v1/token?grant_type=password";
+      const key = window.ENV?.SUPABASE_ANON_KEY || "";
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "apikey": key },
+        body: JSON.stringify({ email, password }),
+      });
+      if (!res.ok) return false;
+      const data = await res.json();
+      if (!data.access_token) return false;
+      localStorage.setItem("sb_session", JSON.stringify({
+        token: data.access_token,
+        expires_at: Date.now() + (data.expires_in * 1000),
+      }));
       return true;
     },
-
     logout() {
-      localStorage.removeItem(SK);
-    }
+      localStorage.removeItem("sb_session");
+    },
+    getToken() {
+      try {
+        const s = JSON.parse(localStorage.getItem("sb_session"));
+        if (!s || Date.now() > s.expires_at) {
+          this.logout();
+          return null;
+        }
+        return s.token;
+      } catch { return null; }
+    },
   };
 })();
