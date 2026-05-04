@@ -90,8 +90,8 @@
     _activeView = "report";
     tableView.classList.add("hidden-view");
     reportView.classList.add("active");
-    const dv = document.getElementById("dashboardView");
-    if (dv) dv.style.display = "none";
+const dv = document.getElementById("dashboardView");
+    if (dv) { dv.style.display = "none"; dv.classList.remove("active"); }
     document
       .querySelectorAll(".nav-item[data-formation]")
       .forEach((btn) => btn.classList.remove("active"));
@@ -101,12 +101,12 @@
     closeSidebar();
   }
 
-  function showDashboardView() {
+ function showDashboardView() {
     _activeView = "dashboard";
     tableView.classList.add("hidden-view");
     reportView.classList.remove("active");
     const dv = document.getElementById("dashboardView");
-    if (dv) dv.style.display = "";
+    if (dv) { dv.style.display = ""; dv.classList.add("active"); }
     document.querySelectorAll(".nav-item[data-formation]").forEach(btn => btn.classList.remove("active"));
     document.getElementById("btnReport")?.classList.remove("active");
     document.getElementById("btnDashboard")?.classList.add("active");
@@ -172,8 +172,8 @@
   function switchFormation(id) {
     _activeFormation = id;
     window.location.hash = id;
-    const dv = document.getElementById("dashboardView");
-    if (dv) dv.style.display = "none";
+const dv = document.getElementById("dashboardView");
+    if (dv) { dv.style.display = "none"; dv.classList.remove("active"); }
     showTableView();
     document.querySelectorAll(".nav-item[data-formation]").forEach((btn) => {
       btn.classList.toggle("active", btn.dataset.formation === id);
