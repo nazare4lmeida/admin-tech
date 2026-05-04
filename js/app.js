@@ -44,6 +44,8 @@
     const validId = GT.FORMATIONS.find((f) => f.id === hashId);
     if (hashId === "dashboard" || !hashId) {
       showDashboardView();
+    } else if (hashId === "certificados") {
+      showCertView();
     } else {
       switchFormation(validId ? hashId : "fullstack");
     }
@@ -77,6 +79,11 @@
       dv.style.display = "none";
       dv.classList.remove("active");
     }
+    const cv = document.getElementById("certView");
+    if (cv) {
+      cv.style.display = "none";
+      cv.classList.remove("active");
+    }
   }
 
   function showTableView() {
@@ -86,6 +93,7 @@
     _hideDashboard();
     document.getElementById("btnReport")?.classList.remove("active");
     document.getElementById("btnDashboard")?.classList.remove("active");
+    document.getElementById("btnCertificados")?.classList.remove("active");
     document.querySelectorAll(".nav-item[data-formation]").forEach((btn) => {
       btn.classList.toggle(
         "active",
@@ -104,6 +112,7 @@
       .forEach((btn) => btn.classList.remove("active"));
     document.getElementById("btnReport")?.classList.add("active");
     document.getElementById("btnDashboard")?.classList.remove("active");
+    document.getElementById("btnCertificados")?.classList.remove("active");
     Report.render();
     closeSidebar();
   }
@@ -117,13 +126,44 @@
       dv.style.display = "";
       dv.classList.add("active");
     }
+    const cv = document.getElementById("certView");
+    if (cv) {
+      cv.style.display = "none";
+      cv.classList.remove("active");
+    }
     document
       .querySelectorAll(".nav-item[data-formation]")
       .forEach((btn) => btn.classList.remove("active"));
     document.getElementById("btnReport")?.classList.remove("active");
     document.getElementById("btnDashboard")?.classList.add("active");
+    document.getElementById("btnCertificados")?.classList.remove("active");
     window.location.hash = "dashboard";
     if (typeof Dashboard !== "undefined") Dashboard.render();
+    closeSidebar();
+  }
+
+  function showCertView() {
+    _activeView = "cert";
+    tableView.classList.add("hidden-view");
+    reportView.classList.remove("active");
+    const dv = document.getElementById("dashboardView");
+    if (dv) {
+      dv.style.display = "none";
+      dv.classList.remove("active");
+    }
+    const cv = document.getElementById("certView");
+    if (cv) {
+      cv.style.display = "";
+      cv.classList.add("active");
+    }
+    document
+      .querySelectorAll(".nav-item[data-formation]")
+      .forEach((btn) => btn.classList.remove("active"));
+    document.getElementById("btnReport")?.classList.remove("active");
+    document.getElementById("btnDashboard")?.classList.remove("active");
+    document.getElementById("btnCertificados")?.classList.add("active");
+    window.location.hash = "certificados";
+    if (typeof Certificados !== "undefined") Certificados.render();
     closeSidebar();
   }
 
@@ -157,11 +197,11 @@
     inp.type = inp.type === "password" ? "text" : "password";
   });
 
- async function handleLogin() {
+  async function handleLogin() {
     const email = document.getElementById("loginEmail").value.trim();
-    const code  = document.getElementById("loginCode").value;
+    const code = document.getElementById("loginCode").value;
     const errEl = document.getElementById("loginError");
-    const btn   = document.getElementById("btnLogin");
+    const btn = document.getElementById("btnLogin");
     errEl.classList.add("hidden");
     btn.disabled = true;
     btn.textContent = "Entrando...";
@@ -205,6 +245,9 @@
   document
     .getElementById("btnDashboard")
     ?.addEventListener("click", showDashboardView);
+  document
+    .getElementById("btnCertificados")
+    ?.addEventListener("click", showCertView);
 
   // ── Top 50 export ──────────────────────────────────────────────
   document.getElementById("exportTop50Xlsx")?.addEventListener("click", () => {
@@ -335,10 +378,16 @@
     .getElementById("btnRefreshReport")
     ?.addEventListener("click", () => Report.render());
   document
+    .getElementById("btnRefreshCert")
+    ?.addEventListener("click", () => Certificados.render());
+  document
     .getElementById("menuBtnReport")
     ?.addEventListener("click", openSidebar);
   document
     .getElementById("menuBtnDashboard")
+    ?.addEventListener("click", openSidebar);
+  document
+    .getElementById("menuBtnCert")
     ?.addEventListener("click", openSidebar);
   document.getElementById("btnPrintReport")?.addEventListener("click", () => {
     document.dispatchEvent(new CustomEvent("gt:printReport"));
@@ -493,26 +542,32 @@
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem("gt_theme", theme);
     const label = theme === "dark" ? "☀️ Tema" : "🌙 Tema";
-    ["themeToggle", "themeToggleReport", "themeToggleDashboard"].forEach(
-      (id) => {
-        const btn = document.getElementById(id);
-        if (btn) btn.textContent = label;
-      },
-    );
+    [
+      "themeToggle",
+      "themeToggleReport",
+      "themeToggleDashboard",
+      "themeToggleCert",
+    ].forEach((id) => {
+      const btn = document.getElementById(id);
+      if (btn) btn.textContent = label;
+    });
   }
 
   document.addEventListener("DOMContentLoaded", () => {
     const saved = localStorage.getItem("gt_theme") || "dark";
     applyTheme(saved);
-    ["themeToggle", "themeToggleReport", "themeToggleDashboard"].forEach(
-      (id) => {
-        document.getElementById(id)?.addEventListener("click", () => {
-          const current =
-            document.documentElement.getAttribute("data-theme") || "dark";
-          applyTheme(current === "dark" ? "light" : "dark");
-        });
-      },
-    );
+    [
+      "themeToggle",
+      "themeToggleReport",
+      "themeToggleDashboard",
+      "themeToggleCert",
+    ].forEach((id) => {
+      document.getElementById(id)?.addEventListener("click", () => {
+        const current =
+          document.documentElement.getAttribute("data-theme") || "dark";
+        applyTheme(current === "dark" ? "light" : "dark");
+      });
+    });
   });
 
   // ============================================================

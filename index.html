@@ -148,12 +148,14 @@
 
         <div class="sidebar-actions">
           <div class="nav-label">Ferramentas</div>
-                    <button class="nav-item" id="btnDashboard">
+          <button class="nav-item" id="btnDashboard">
             <span class="nav-icon">🏠</span><span>Início</span>
           </button>
-                    <!-- NOVO: botão relatório -->
           <button class="nav-item" id="btnReport">
             <span class="nav-icon">📊</span><span>Relatório</span>
+          </button>
+          <button class="nav-item" id="btnCertificados">
+            <span class="nav-icon">📋</span><span>Certificados</span>
           </button>
           <button class="nav-item" id="btnImport">
             <span class="nav-icon">📥</span><span>Importar .xlsx</span>
@@ -165,7 +167,7 @@
             <span class="nav-icon">➕</span><span>Novo Aluno</span>
           </button>
           <button class="nav-item" id="btnNewFormation">
-            <span class="nav-icon">➕</span><span>Nova Turma</span>
+            <span class="nav-icon">🏫</span><span>Nova Turma</span>
           </button>
         </div>
 
@@ -176,7 +178,7 @@
         </div>
       </aside>
 
-      <!-- MAIN CONTENT WRAPPER — substituiu <main class="main-content"> -->
+      <!-- MAIN CONTENT WRAPPER -->
       <div
         style="
           flex: 1;
@@ -186,7 +188,7 @@
           min-width: 0;
         "
       >
-        <!-- ===== TABLE VIEW (tudo que existia antes) ===== -->
+        <!-- ===== TABLE VIEW ===== -->
         <div class="table-view" id="tableView">
           <header class="topbar">
             <button class="menu-btn" id="menuBtn" aria-label="Abrir menu">
@@ -243,7 +245,6 @@
 
           <div class="content-area">
             <div class="summary-cards" id="summaryCards"></div>
-
             <div class="table-wrapper">
               <div class="table-toolbar">
                 <div class="search-wrap">
@@ -274,7 +275,6 @@
                   </select>
                 </div>
               </div>
-
               <div class="table-scroll" id="tableScroll">
                 <table class="students-table" id="studentsTable">
                   <thead id="tableHead"></thead>
@@ -293,7 +293,7 @@
         </div>
         <!-- /table-view -->
 
-        <!-- ===== REPORT VIEW (novo) ===== -->
+        <!-- ===== REPORT VIEW ===== -->
         <div class="report-view" id="reportView">
           <div class="report-topbar">
             <button class="menu-btn" id="menuBtnReport" aria-label="Abrir menu">
@@ -342,24 +342,97 @@
         <!-- /report-view -->
 
         <!-- ===== DASHBOARD VIEW ===== -->
-        <div class="report-view" id="dashboardView" style="display:none">
+        <div class="report-view" id="dashboardView" style="display: none">
           <div class="report-topbar">
-            <button class="menu-btn" id="menuBtnDashboard" aria-label="Abrir menu">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <button
+              class="menu-btn"
+              id="menuBtnDashboard"
+              aria-label="Abrir menu"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
                 <path d="M3 12h18M3 6h18M3 18h18" />
               </svg>
             </button>
-            <span class="report-topbar-title">🏠 Início — Painel do Administrador</span>
+            <span class="report-topbar-title"
+              >🏠 Início — Painel do Administrador</span
+            >
             <button
               id="themeToggleDashboard"
-              style="background:none;border:1px solid var(--border2);border-radius:var(--radius-sm);padding:6px 11px;cursor:pointer;color:var(--text2);font-size:12.5px;font-family:var(--font);font-weight:500;transition:all var(--transition);margin-left:8px;white-space:nowrap"
-            >🌙 Tema</button>
+              style="
+                background: none;
+                border: 1px solid var(--border2);
+                border-radius: var(--radius-sm);
+                padding: 6px 11px;
+                cursor: pointer;
+                color: var(--text2);
+                font-size: 12.5px;
+                font-family: var(--font);
+                font-weight: 500;
+                transition: all var(--transition);
+                margin-left: 8px;
+                white-space: nowrap;
+              "
+            >
+              🌙 Tema
+            </button>
           </div>
           <div class="report-scroll" id="dashboardContent">
             <div class="rpt-loading">Carregando...</div>
           </div>
         </div>
         <!-- /dashboard-view -->
+
+        <!-- ===== CERTIFICADOS VIEW ===== -->
+        <div class="report-view" id="certView" style="display: none">
+          <div class="report-topbar">
+            <button class="menu-btn" id="menuBtnCert" aria-label="Abrir menu">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M3 12h18M3 6h18M3 18h18" />
+              </svg>
+            </button>
+            <span class="report-topbar-title"
+              >📋 Certificados — Gerenciamento de Alunos</span
+            >
+            <button class="btn-refresh-report" id="btnRefreshCert">
+              🔄 Atualizar
+            </button>
+            <button
+              id="themeToggleCert"
+              style="
+                background: none;
+                border: 1px solid var(--border2);
+                border-radius: var(--radius-sm);
+                padding: 6px 11px;
+                cursor: pointer;
+                color: var(--text2);
+                font-size: 12.5px;
+                font-family: var(--font);
+                font-weight: 500;
+                transition: all var(--transition);
+                margin-left: 8px;
+                white-space: nowrap;
+              "
+            >
+              🌙 Tema
+            </button>
+          </div>
+          <div class="report-scroll" id="certContent">
+            <div class="rpt-loading">
+              Clique em "Atualizar" para carregar os dados.
+            </div>
+          </div>
+        </div>
+        <!-- /cert-view -->
       </div>
       <!-- /main wrapper -->
     </div>
@@ -392,7 +465,6 @@
           </button>
           <button class="btn-modal-apply" id="fillModalApply">✓ Aplicar</button>
         </div>
-        <!-- Navegação entre alunos -->
         <div class="modal-nav" id="fillModalNav">
           <button
             class="btn-modal-nav"
@@ -501,12 +573,29 @@
             📤 Exportar .xlsx
           </button>
         </div>
-        <div class="modal-actions" style="margin-top:8px;padding-top:12px;border-top:1px solid var(--border2)">
-          <span style="font-size:11px;color:var(--text3);align-self:center">Top 50:</span>
-          <button class="btn-modal-apply" id="exportTop50Xlsx" style="background:linear-gradient(135deg,#f59e0b,#d97706)">
+        <div
+          class="modal-actions"
+          style="
+            margin-top: 8px;
+            padding-top: 12px;
+            border-top: 1px solid var(--border2);
+          "
+        >
+          <span style="font-size: 11px; color: var(--text3); align-self: center"
+            >Top 50:</span
+          >
+          <button
+            class="btn-modal-apply"
+            id="exportTop50Xlsx"
+            style="background: linear-gradient(135deg, #f59e0b, #d97706)"
+          >
             🥇 Top 50 .xlsx
           </button>
-          <button class="btn-modal-apply" id="exportTop50Html" style="background:linear-gradient(135deg,#7c3aed,#a855f7)">
+          <button
+            class="btn-modal-apply"
+            id="exportTop50Html"
+            style="background: linear-gradient(135deg, #7c3aed, #a855f7)"
+          >
             🥇 Top 50 .html
           </button>
         </div>
@@ -518,6 +607,7 @@
 
     <!-- Scripts — ORDER MATTERS -->
     <script src="js/dashboard.js"></script>
+    <script src="js/certificados.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/config.js"></script>
     <script src="js/supabase.js"></script>
