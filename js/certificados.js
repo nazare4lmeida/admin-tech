@@ -467,14 +467,14 @@
             <p class="rpt-main-sub" id="certSubtitle">${_allRows.length} alunos cadastrados · ${_filteredRows.length} exibidos</p>
           </div>
           <div class="rpt-header-btns">
-            <button class="rpt-edit-btn" id="certBtnSistema" style="background:linear-gradient(135deg,#2563eb,#7b4fff)" title="Importa do sistema apenas alunos com Conclusão ou Participação">
+            <button class="rpt-edit-btn" id="certBtnSistema" style="background:linear-gradient(135deg,#2563eb,#7b4fff);color:#fff;font-weight:600" title="Importa do sistema apenas alunos com Conclusão ou Participação">
               🔄 Importar do Sistema
             </button>
-            <button class="rpt-edit-btn" id="certBtnImport" title="Importar planilha .xlsx de inscrições">
+            <button class="rpt-edit-btn" id="certBtnImport" style="color:#fff;font-weight:600" title="Importar planilha .xlsx de inscrições">
               📥 Importar .xlsx
             </button>
-            <button class="rpt-edit-btn" id="certBtnExportXlsx" style="background:var(--green)">📊 .xlsx</button>
-            <button class="rpt-edit-btn" id="certBtnExportHtml" style="background:#7c3aed">🎨 .html</button>
+            <button class="rpt-edit-btn" id="certBtnExportXlsx" style="background:#059669;color:#fff;font-weight:600">📊 Exportar .xlsx</button>
+            <button class="rpt-edit-btn" id="certBtnExportHtml" style="background:#7c3aed;color:#fff;font-weight:600">🎨 Exportar .html</button>
           </div>
         </div>
       </div>
@@ -512,8 +512,12 @@
         <input type="file" id="certFileInput" accept=".xlsx" style="display:none" />
       </div>
 
-      <div style="overflow-x:auto;border-radius:12px;border:1px solid var(--border2)">
-        <table class="students-table" style="min-width:1000px">
+      <!-- Scroll bar on top -->
+      <div id="certScrollTop" style="overflow-x:auto;height:16px;margin-bottom:2px;border-radius:6px">
+        <div id="certScrollSpacer" style="height:1px"></div>
+      </div>
+      <div id="certScrollMain" style="overflow-x:auto;border-radius:12px;border:1px solid var(--border2)">
+        <table class="students-table" id="certTable" style="min-width:1200px">
           <thead>
             <tr>
               <th style="width:36px">#</th>
@@ -614,6 +618,24 @@
     document
       .getElementById("certBtnExportHtml")
       ?.addEventListener("click", () => exportHtml(_filteredRows));
+
+    // Sync top scrollbar with table scrollbar
+    const scrollMain = document.getElementById("certScrollMain");
+    const scrollTop = document.getElementById("certScrollTop");
+    const table = document.getElementById("certTable");
+    if (scrollMain && scrollTop && table) {
+      // Set spacer width to match table
+      setTimeout(() => {
+        const spacer = document.getElementById("certScrollSpacer");
+        if (spacer) spacer.style.width = table.offsetWidth + "px";
+      }, 100);
+      scrollTop.addEventListener("scroll", () => {
+        scrollMain.scrollLeft = scrollTop.scrollLeft;
+      });
+      scrollMain.addEventListener("scroll", () => {
+        scrollTop.scrollLeft = scrollMain.scrollLeft;
+      });
+    }
   }
 
   // ── Build row ─────────────────────────────────────────────────
@@ -637,34 +659,38 @@
     // Campos de texto editáveis inline
     const editCell = (field, value, type = "text", extra = "") =>
       `<input type="${type}" value="${(value || "").toString().replace(/"/g, "&quot;")}"
-        style="width:100%;background:transparent;border:none;outline:none;font-family:var(--font);font-size:13px;color:var(--text1);padding:2px 0"
+        style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;outline:none;font-family:var(--font);font-size:12.5px;color:var(--text1);padding:4px 8px;transition:border-color .15s,box-shadow .15s;box-sizing:border-box"
+        onfocus="this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 2px rgba(74,125,245,0.15)'"
+        onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
         onchange="Cert._onTextChange('${r.id}','${field}',this.value)"
+        placeholder="${field === "cpf" ? "000.000.000-00" : field === "email" ? "email@exemplo.com" : ""}"
         ${extra} />`;
 
     const nome_safe = (r.nome || "").replace(/'/g, "\\'");
 
+    const tdStyle = "padding:6px 8px;vertical-align:middle";
     return `<tr data-cert-id="${r.id}">
-      <td style="text-align:center;color:var(--text3)">${i + 1}</td>
-      <td style="font-weight:600;min-width:190px">${editCell("nome", r.nome)}</td>
-      <td style="font-family:monospace;font-size:12px">${editCell("cpf", r.cpf)}</td>
-      <td style="font-size:12px">${editCell("email", r.email, "email")}</td>
-      <td>${editCell("cidade", r.cidade)}</td>
-      <td>${editCell("modalidade", r.modalidade)}</td>
-      <td style="font-size:12px">${editCell("formacao", r.formacao)}</td>
-      <td style="text-align:center">${editCell("nota_final", r.nota_final, "number", 'min="0" max="10" step="0.1"')}</td>
-      <td style="text-align:center">${editCell("frequencia", r.frequencia, "number", 'min="0" max="100" step="1"')}</td>
-      <td style="font-size:12px">${editCell("status", r.status)}</td>
-      <td>
-        <select class="status-badge ${certClass}" onchange="Cert._onFieldChange('${r.id}','certificado',this.value,this)">
+      <td style="${tdStyle};text-align:center;color:var(--text3);font-size:12px;width:36px">${i + 1}</td>
+      <td style="${tdStyle};font-weight:600;min-width:190px">${editCell("nome", r.nome)}</td>
+      <td style="${tdStyle};min-width:130px">${editCell("cpf", r.cpf)}</td>
+      <td style="${tdStyle};min-width:180px">${editCell("email", r.email, "email")}</td>
+      <td style="${tdStyle};min-width:110px">${editCell("cidade", r.cidade)}</td>
+      <td style="${tdStyle};min-width:100px">${editCell("modalidade", r.modalidade)}</td>
+      <td style="${tdStyle};min-width:160px">${editCell("formacao", r.formacao)}</td>
+      <td style="${tdStyle};width:90px">${editCell("nota_final", r.nota_final, "number", 'min="0" max="10" step="0.1"')}</td>
+      <td style="${tdStyle};width:90px">${editCell("frequencia", r.frequencia, "number", 'min="0" max="100" step="1"')}</td>
+      <td style="${tdStyle};min-width:160px">${editCell("status", r.status)}</td>
+      <td style="${tdStyle};min-width:220px">
+        <select class="status-badge ${certClass}" style="width:100%;cursor:pointer" onchange="Cert._onFieldChange('${r.id}','certificado',this.value,this)">
           ${certOpts}
         </select>
       </td>
-      <td>
-        <select class="medal-badge${r.medalha ? " medal-" + r.medalha.toLowerCase() : ""}" onchange="Cert._onFieldChange('${r.id}','medalha',this.value,this)">
+      <td style="${tdStyle};min-width:130px">
+        <select class="medal-badge${r.medalha ? " medal-" + r.medalha.toLowerCase() : ""}" style="width:100%;cursor:pointer" onchange="Cert._onFieldChange('${r.id}','medalha',this.value,this)">
           ${medalOpts}
         </select>
       </td>
-      <td>
+      <td style="${tdStyle};width:36px;text-align:center">
         <button class="btn-del" title="Remover" onclick="Cert._deleteRow('${r.id}','${nome_safe}')">✕</button>
       </td>
     </tr>`;
