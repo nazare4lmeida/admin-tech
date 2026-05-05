@@ -147,7 +147,7 @@
           // Atualiza apenas campos do sistema — preserva CPF, email, cidade, modalidade que já tiver
           const updates = {
             formacao: f.label,
-            nota_final: nota ?? existing_row.nota_final ?? null,
+            nota_projeto: nota ?? existing_row.nota_projeto ?? null,
             frequencia: freq ?? existing_row.frequencia ?? null,
             status: statusObj.label,
             certificado: existing_row.certificado || certLabel,
@@ -170,7 +170,8 @@
             cidade: null,
             modalidade: f.presencial ? "Presencial" : "Online",
             formacao: f.label,
-            nota_final: nota ?? null,
+            nota_projeto: nota ?? null,
+            nota_prova: null,
             frequencia: freq ?? null,
             status: statusObj.label,
             certificado: certLabel,
@@ -198,7 +199,8 @@
     cidade: ["cidade"],
     modalidade: ["modalidade"],
     formacao: ["curso_interesse", "curso", "formacao", "curso_formacao"],
-    nota_final: ["nota_final", "nota"],
+    nota_projeto: ["nota_projeto", "nota_final", "nota"],
+    nota_prova: ["nota_prova", "nota_da_prova"],
     frequencia: ["frequencia", "frequencia_percent", "presenca_final_plat"],
     status: ["status_geral", "status", "situacao"],
     certificado: ["certificado", "tipo_certificado"],
@@ -274,7 +276,11 @@
                 null,
               formacao:
                 (m.formacao || "").toString().trim() || match?.formacao || null,
-              nota_final: normPct(m.nota_final) ?? match?.nota_final ?? null,
+              nota_projeto:
+                normPct(m.nota_projeto ?? m.nota_final) ??
+                match?.nota_projeto ??
+                null,
+              nota_prova: normPct(m.nota_prova) ?? match?.nota_prova ?? null,
               frequencia: normPct(m.frequencia) ?? match?.frequencia ?? null,
               status:
                 (m.status || match?.status || "").toString().trim() || null,
@@ -312,7 +318,8 @@
       Cidade: r.cidade || "",
       Modalidade: r.modalidade || "",
       "Curso/Formação": r.formacao || "",
-      "Nota Final": r.nota_final ?? "",
+      "Nota Projeto": r.nota_projeto ?? "",
+      "Nota Prova": r.nota_prova ?? "",
       Frequência: r.frequencia ?? "",
       Status: r.status || "",
       Certificado: r.certificado || "",
@@ -370,7 +377,7 @@
     <p class="sub">Exportado em ${new Date().toLocaleDateString("pt-BR")} · ${rows.length} aluno(s)</p>
     <table><thead><tr>
       <th>#</th><th>Nome</th><th>CPF</th><th>E-mail</th><th>Cidade</th>
-      <th>Modalidade</th><th>Curso/Formação</th><th>Nota Final</th>
+      <th>Modalidade</th><th>Curso/Formação</th><th>Nota Projeto</th><th>Nota Prova</th>
       <th>Frequência</th><th>Status</th><th>Certificado</th><th>Medalha</th>
     </tr></thead><tbody>`;
 
@@ -385,7 +392,8 @@
         <td>${r.cidade || ""}</td>
         <td>${r.modalidade || ""}</td>
         <td>${r.formacao || ""}</td>
-        <td style="text-align:center">${r.nota_final ?? ""}</td>
+        <td style="text-align:center">${r.nota_projeto ?? ""}</td>
+        <td style="text-align:center">${r.nota_prova ?? ""}</td>
         <td style="text-align:center">${r.frequencia != null ? r.frequencia + "%" : ""}</td>
         <td>${r.status || ""}</td>
         <td style="background:${cc.bg || ""};color:${cc.text || ""};font-weight:600">${r.certificado || ""}</td>
@@ -556,7 +564,8 @@
               <th style="min-width:110px">Cidade</th>
               <th style="min-width:100px">Modalidade</th>
               <th style="min-width:170px">Curso/Formação</th>
-              <th style="width:90px">Nota Final</th>
+              <th style="width:90px">Nota Projeto</th>
+              <th style="width:90px">Nota Prova</th>
               <th style="width:90px">Frequência</th>
               <th style="min-width:160px">Status</th>
               <th style="min-width:220px">Certificado</th>
@@ -567,7 +576,7 @@
           <tbody id="certTableBody">
             ${
               _filteredRows.length === 0
-                ? `<tr><td colspan="13" style="text-align:center;padding:32px;color:var(--text3)">
+                ? `<tr><td colspan="14" style="text-align:center;padding:32px;color:var(--text3)">
                   ${
                     _allRows.length === 0
                       ? 'Nenhum aluno cadastrado. Clique em <strong>"Importar do Sistema"</strong> para começar.'
@@ -732,7 +741,8 @@
       <td style="${tdStyle};min-width:110px">${editCell("cidade", r.cidade)}</td>
       <td style="${tdStyle};min-width:100px">${editCell("modalidade", r.modalidade)}</td>
       <td style="${tdStyle};min-width:160px">${editCell("formacao", r.formacao)}</td>
-      <td style="${tdStyle};width:90px">${editCell("nota_final", r.nota_final, "number", 'min="0" max="10" step="0.1"')}</td>
+      <td style="${tdStyle};width:90px">${editCell("nota_projeto", r.nota_projeto, "number", 'min="0" max="10" step="0.1"')}</td>
+      <td style="${tdStyle};width:90px">${editCell("nota_prova", r.nota_prova, "number", 'min="0" max="10" step="0.1"')}</td>
       <td style="${tdStyle};width:90px">${editCell("frequencia", r.frequencia, "number", 'min="0" max="100" step="1"')}</td>
       <td style="${tdStyle};min-width:160px">${editCell("status", r.status)}</td>
       <td style="${tdStyle};min-width:220px">
@@ -759,7 +769,7 @@
       sub.textContent = `${_allRows.length} alunos cadastrados · ${_filteredRows.length} exibidos`;
     tbody.innerHTML =
       _filteredRows.length === 0
-        ? `<tr><td colspan="13" style="text-align:center;padding:32px;color:var(--text3)">Nenhum aluno encontrado.</td></tr>`
+        ? `<tr><td colspan="14" style="text-align:center;padding:32px;color:var(--text3)">Nenhum aluno encontrado.</td></tr>`
         : _filteredRows.map((r, i) => _buildRow(r, i)).join("");
   }
 
@@ -797,8 +807,12 @@
           </div>
           <div class="modal-field"><label>Curso/Formação</label><input type="text" id="cnFormacao" placeholder="Ex: Fullstack, IA Generativa..." /></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div class="modal-field"><label>Nota Final</label><input type="number" id="cnNota" min="0" max="10" step="0.1" placeholder="0.0" /></div>
+            <div class="modal-field"><label>Nota do Projeto</label><input type="number" id="cnNota" min="0" max="10" step="0.1" placeholder="0.0" /></div>
+            <div class="modal-field"><label>Nota da Prova</label><input type="number" id="cnNotaProva" min="0" max="10" step="0.1" placeholder="0.0" /></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>Frequência (%)</label><input type="number" id="cnFreq" min="0" max="100" step="1" placeholder="0" /></div>
+            <div></div>
           </div>
           <div class="modal-field"><label>Status</label><input type="text" id="cnStatus" placeholder="Ex: Certificado de Conclusão" /></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -848,7 +862,10 @@
         cidade: document.getElementById("cnCidade").value.trim() || null,
         modalidade: document.getElementById("cnModalidade").value || null,
         formacao: document.getElementById("cnFormacao").value.trim() || null,
-        nota_final: parseFloat(document.getElementById("cnNota").value) || null,
+        nota_projeto:
+          parseFloat(document.getElementById("cnNota").value) || null,
+        nota_prova:
+          parseFloat(document.getElementById("cnNotaProva").value) || null,
         frequencia: parseFloat(document.getElementById("cnFreq").value) || null,
         status: document.getElementById("cnStatus").value.trim() || null,
         certificado: document.getElementById("cnCert").value || null,
@@ -919,8 +936,12 @@
           </div>
           <div class="modal-field"><label>Curso/Formação</label><input type="text" id="cfFormacao" value="${r.formacao || ""}" /></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div class="modal-field"><label>Nota Final</label><input type="number" id="cfNota" value="${r.nota_final ?? ""}" min="0" max="10" step="0.1" /></div>
+            <div class="modal-field"><label>Nota do Projeto</label><input type="number" id="cfNota" value="${r.nota_projeto ?? ""}" min="0" max="10" step="0.1" /></div>
+            <div class="modal-field"><label>Nota da Prova</label><input type="number" id="cfNotaProva" value="${r.nota_prova ?? ""}" min="0" max="10" step="0.1" /></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>Frequência (%)</label><input type="number" id="cfFreq" value="${r.frequencia ?? ""}" min="0" max="100" step="1" /></div>
+            <div></div>
           </div>
           <div class="modal-field"><label>Status</label><input type="text" id="cfStatus" value="${r.status || ""}" /></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -994,7 +1015,10 @@
         cidade: document.getElementById("cfCidade").value.trim() || null,
         modalidade: document.getElementById("cfModalidade").value || null,
         formacao: document.getElementById("cfFormacao").value.trim() || null,
-        nota_final: parseFloat(document.getElementById("cfNota").value) || null,
+        nota_projeto:
+          parseFloat(document.getElementById("cfNota").value) || null,
+        nota_prova:
+          parseFloat(document.getElementById("cfNotaProva").value) || null,
         frequencia: parseFloat(document.getElementById("cfFreq").value) || null,
         status: document.getElementById("cfStatus").value.trim() || null,
         certificado: document.getElementById("cfCert").value || null,
@@ -1029,13 +1053,16 @@
           cidade: "cidade",
           modalidade: "modalidade",
           formacao: "formacao",
-          nota_final: "nota_final",
+          nota_projeto: "nota_projeto",
+          nota_prova: "nota_prova",
           frequencia: "frequencia",
           status: "status",
         }[field];
         if (!col) return;
         const v =
-          field === "nota_final" || field === "frequencia"
+          field === "nota_projeto" ||
+          field === "nota_prova" ||
+          field === "frequencia"
             ? value === ""
               ? null
               : parseFloat(value)
