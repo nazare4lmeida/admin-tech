@@ -419,6 +419,7 @@
   let _filterForm = "";
   let _filterCert = "";
   let _filterMedal = "";
+  let _filterIncompleto = "";
   let _search = "";
 
   async function render() {
@@ -446,6 +447,20 @@
         const q = normalizar(_search);
         const hay = normalizar([r.nome, r.cpf, r.email, r.cidade].join(" "));
         if (!hay.includes(q)) return false;
+      }
+      if (_filterIncompleto) {
+        const camposObrigatorios = [
+          "nome",
+          "cpf",
+          "email",
+          "cidade",
+          "certificado",
+        ];
+        const incompleto = camposObrigatorios.some(
+          (c) => !r[c] || r[c].toString().trim() === "",
+        );
+        if (_filterIncompleto === "incompleto" && !incompleto) return false;
+        if (_filterIncompleto === "completo" && incompleto) return false;
       }
       return true;
     });
@@ -475,6 +490,7 @@
             </button>
             <button class="rpt-edit-btn" id="certBtnExportXlsx" style="background:#059669;color:#fff;font-weight:600">📊 Exportar .xlsx</button>
             <button class="rpt-edit-btn" id="certBtnExportHtml" style="background:#7c3aed;color:#fff;font-weight:600">🎨 Exportar .html</button>
+            <button class="rpt-edit-btn" id="certBtnNovoAluno" style="background:linear-gradient(135deg,#059669,#10b981);color:#fff;font-weight:600">➕ Novo Aluno</button>
           </div>
         </div>
       </div>
@@ -508,6 +524,11 @@
           <option value="ouro"   ${_filterMedal === "ouro" ? "selected" : ""}>🥇 Ouro</option>
           <option value="prata"  ${_filterMedal === "prata" ? "selected" : ""}>🥈 Prata</option>
           <option value="bronze" ${_filterMedal === "bronze" ? "selected" : ""}>🥉 Bronze</option>
+        </select>
+        <select id="certFilterIncompleto" style="background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm);padding:8px 12px;color:var(--text1);font-family:var(--font);font-size:13px">
+          <option value="">Todos os alunos</option>
+          <option value="incompleto" ${_filterIncompleto === "incompleto" ? "selected" : ""}>⚠️ Campos incompletos</option>
+          <option value="completo"   ${_filterIncompleto === "completo" ? "selected" : ""}>✅ Todos completos</option>
         </select>
         <input type="file" id="certFileInput" accept=".xlsx" style="display:none" />
       </div>
@@ -579,6 +600,13 @@
         _applyFilters();
         _rerenderBody();
       });
+    document
+      .getElementById("certFilterIncompleto")
+      ?.addEventListener("change", (e) => {
+        _filterIncompleto = e.target.value;
+        _applyFilters();
+        _rerenderBody();
+      });
 
     document
       .getElementById("certBtnSistema")
@@ -618,6 +646,9 @@
     document
       .getElementById("certBtnExportHtml")
       ?.addEventListener("click", () => exportHtml(_filteredRows));
+    document
+      .getElementById("certBtnNovoAluno")
+      ?.addEventListener("click", openNovoAlunoModal);
 
     // Sync top scrollbar with table scrollbar
     const scrollMain = document.getElementById("certScrollMain");
@@ -706,6 +737,110 @@
       _filteredRows.length === 0
         ? `<tr><td colspan="13" style="text-align:center;padding:32px;color:var(--text3)">Nenhum aluno encontrado.</td></tr>`
         : _filteredRows.map((r, i) => _buildRow(r, i)).join("");
+  }
+
+  function openNovoAlunoModal() {
+    const existing = document.getElementById("certNovoOverlay");
+    if (existing) existing.remove();
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.id = "certNovoOverlay";
+    overlay.innerHTML = `
+      <div class="modal-box" style="max-width:520px">
+        <button class="modal-close" id="certNovoClose">✕</button>
+        <div class="modal-header">
+          <div class="modal-icon">➕</div>
+          <div class="modal-title-wrap">
+            <div class="modal-title">Novo Aluno</div>
+            <div class="modal-subtitle">Preencha os dados para certificação</div>
+          </div>
+        </div>
+        <div class="modal-fields" style="gap:12px">
+          <div class="modal-field"><label>Nome Completo *</label><input type="text" id="cnNome" placeholder="Nome completo do aluno" /></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="modal-field"><label>CPF</label><input type="text" id="cnCpf" placeholder="000.000.000-00" /></div>
+            <div class="modal-field"><label>E-mail</label><input type="email" id="cnEmail" placeholder="email@exemplo.com" /></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="modal-field"><label>Cidade</label><input type="text" id="cnCidade" placeholder="Fortaleza" /></div>
+            <div class="modal-field"><label>Modalidade</label>
+              <select id="cnModalidade">
+                <option value="">— selecione —</option>
+                <option value="Online">Online</option>
+                <option value="Presencial">Presencial</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-field"><label>Curso/Formação</label><input type="text" id="cnFormacao" placeholder="Ex: Fullstack, IA Generativa..." /></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="modal-field"><label>Nota Final</label><input type="number" id="cnNota" min="0" max="10" step="0.1" placeholder="0.0" /></div>
+            <div class="modal-field"><label>Frequência (%)</label><input type="number" id="cnFreq" min="0" max="100" step="1" placeholder="0" /></div>
+          </div>
+          <div class="modal-field"><label>Status</label><input type="text" id="cnStatus" placeholder="Ex: Certificado de Conclusão" /></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="modal-field"><label>Certificado</label>
+              <select id="cnCert">
+                <option value="">— selecione —</option>
+                <option value="Certificado de Conclusão">Certificado de Conclusão</option>
+                <option value="Certificado de Participação">Certificado de Participação</option>
+                <option value="Certificado de Vinculação">Certificado de Vinculação</option>
+              </select>
+            </div>
+            <div class="modal-field"><label>Medalha</label>
+              <select id="cnMedalha">
+                <option value="">— nenhuma —</option>
+                <option value="ouro">🥇 Ouro</option>
+                <option value="prata">🥈 Prata</option>
+                <option value="bronze">🥉 Bronze</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-modal-cancel" id="certNovoCancel">Cancelar</button>
+          <button class="btn-modal-apply" id="certNovoSave">✓ Adicionar Aluno</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    document.getElementById("certNovoClose").onclick = close;
+    document.getElementById("certNovoCancel").onclick = close;
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close();
+    });
+
+    document.getElementById("certNovoSave").onclick = async () => {
+      const nome = document.getElementById("cnNome").value.trim();
+      if (!nome) {
+        toast("Nome é obrigatório.", "error");
+        return;
+      }
+      const row = {
+        id: "cert_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+        nome,
+        cpf: document.getElementById("cnCpf").value.trim() || null,
+        email: document.getElementById("cnEmail").value.trim() || null,
+        cidade: document.getElementById("cnCidade").value.trim() || null,
+        modalidade: document.getElementById("cnModalidade").value || null,
+        formacao: document.getElementById("cnFormacao").value.trim() || null,
+        nota_final: parseFloat(document.getElementById("cnNota").value) || null,
+        frequencia: parseFloat(document.getElementById("cnFreq").value) || null,
+        status: document.getElementById("cnStatus").value.trim() || null,
+        certificado: document.getElementById("cnCert").value || null,
+        medalha: document.getElementById("cnMedalha").value || null,
+      };
+      try {
+        await upsert(row);
+        _allRows.push(row);
+        _applyFilters();
+        _rerenderBody();
+        close();
+        toast(`Aluno "${nome}" adicionado!`, "success");
+      } catch (err) {
+        toast("Erro ao salvar: " + err.message, "error");
+      }
+    };
   }
 
   // ── Handlers expostos ─────────────────────────────────────────
