@@ -147,7 +147,7 @@
           // Atualiza apenas campos do sistema — preserva CPF, email, cidade, modalidade que já tiver
           const updates = {
             formacao: f.label,
-            nota_projeto: nota ?? existing_row.nota_projeto ?? null,
+            nota_final: nota ?? existing_row.nota_final ?? null,
             frequencia: freq ?? existing_row.frequencia ?? null,
             status: statusObj.label,
             certificado: existing_row.certificado || certLabel,
@@ -170,7 +170,7 @@
             cidade: null,
             modalidade: f.presencial ? "Presencial" : "Online",
             formacao: f.label,
-            nota_projeto: nota ?? null,
+            nota_final: nota ?? null,
             nota_prova: null,
             frequencia: freq ?? null,
             status: statusObj.label,
@@ -199,7 +199,7 @@
     cidade: ["cidade"],
     modalidade: ["modalidade"],
     formacao: ["curso_interesse", "curso", "formacao", "curso_formacao"],
-    nota_projeto: ["nota_projeto", "nota_final", "nota"],
+    nota_final: ["nota_final", "nota"],
     nota_prova: ["nota_prova", "nota_da_prova"],
     frequencia: ["frequencia", "frequencia_percent", "presenca_final_plat"],
     status: ["status_geral", "status", "situacao"],
@@ -276,10 +276,7 @@
                 null,
               formacao:
                 (m.formacao || "").toString().trim() || match?.formacao || null,
-              nota_projeto:
-                normPct(m.nota_projeto ?? m.nota_final) ??
-                match?.nota_projeto ??
-                null,
+              nota_final: normPct(m.nota_final) ?? match?.nota_final ?? null,
               nota_prova: normPct(m.nota_prova) ?? match?.nota_prova ?? null,
               frequencia: normPct(m.frequencia) ?? match?.frequencia ?? null,
               status:
@@ -318,7 +315,7 @@
       Cidade: r.cidade || "",
       Modalidade: r.modalidade || "",
       "Curso/Formação": r.formacao || "",
-      "Nota Projeto": r.nota_projeto ?? "",
+      "Nota Projeto": r.nota_final ?? "",
       "Nota Prova": r.nota_prova ?? "",
       Frequência: r.frequencia ?? "",
       Status: r.status || "",
@@ -392,7 +389,7 @@
         <td>${r.cidade || ""}</td>
         <td>${r.modalidade || ""}</td>
         <td>${r.formacao || ""}</td>
-        <td style="text-align:center">${r.nota_projeto ?? ""}</td>
+        <td style="text-align:center">${r.nota_final ?? ""}</td>
         <td style="text-align:center">${r.nota_prova ?? ""}</td>
         <td style="text-align:center">${r.frequencia != null ? r.frequencia + "%" : ""}</td>
         <td>${r.status || ""}</td>
@@ -741,7 +738,7 @@
       <td style="${tdStyle};min-width:110px">${editCell("cidade", r.cidade)}</td>
       <td style="${tdStyle};min-width:100px">${editCell("modalidade", r.modalidade)}</td>
       <td style="${tdStyle};min-width:160px">${editCell("formacao", r.formacao)}</td>
-      <td style="${tdStyle};width:90px">${editCell("nota_projeto", r.nota_projeto, "number", 'min="0" max="10" step="0.1"')}</td>
+      <td style="${tdStyle};width:90px">${editCell("nota_final", r.nota_final, "number", 'min="0" max="10" step="0.1"')}</td>
       <td style="${tdStyle};width:90px">${editCell("nota_prova", r.nota_prova, "number", 'min="0" max="10" step="0.1"')}</td>
       <td style="${tdStyle};width:90px">${editCell("frequencia", r.frequencia, "number", 'min="0" max="100" step="1"')}</td>
       <td style="${tdStyle};min-width:160px">${editCell("status", r.status)}</td>
@@ -862,8 +859,7 @@
         cidade: document.getElementById("cnCidade").value.trim() || null,
         modalidade: document.getElementById("cnModalidade").value || null,
         formacao: document.getElementById("cnFormacao").value.trim() || null,
-        nota_projeto:
-          parseFloat(document.getElementById("cnNota").value) || null,
+        nota_final: parseFloat(document.getElementById("cnNota").value) || null,
         nota_prova:
           parseFloat(document.getElementById("cnNotaProva").value) || null,
         frequencia: parseFloat(document.getElementById("cnFreq").value) || null,
@@ -936,7 +932,7 @@
           </div>
           <div class="modal-field"><label>Curso/Formação</label><input type="text" id="cfFormacao" value="${r.formacao || ""}" /></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-            <div class="modal-field"><label>Nota do Projeto</label><input type="number" id="cfNota" value="${r.nota_projeto ?? ""}" min="0" max="10" step="0.1" /></div>
+            <div class="modal-field"><label>Nota do Projeto</label><input type="number" id="cfNota" value="${r.nota_final ?? ""}" min="0" max="10" step="0.1" /></div>
             <div class="modal-field"><label>Nota da Prova</label><input type="number" id="cfNotaProva" value="${r.nota_prova ?? ""}" min="0" max="10" step="0.1" /></div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -1015,8 +1011,7 @@
         cidade: document.getElementById("cfCidade").value.trim() || null,
         modalidade: document.getElementById("cfModalidade").value || null,
         formacao: document.getElementById("cfFormacao").value.trim() || null,
-        nota_projeto:
-          parseFloat(document.getElementById("cfNota").value) || null,
+        nota_final: parseFloat(document.getElementById("cfNota").value) || null,
         nota_prova:
           parseFloat(document.getElementById("cfNotaProva").value) || null,
         frequencia: parseFloat(document.getElementById("cfFreq").value) || null,
@@ -1053,14 +1048,14 @@
           cidade: "cidade",
           modalidade: "modalidade",
           formacao: "formacao",
-          nota_projeto: "nota_projeto",
+          nota_final: "nota_final",
           nota_prova: "nota_prova",
           frequencia: "frequencia",
           status: "status",
         }[field];
         if (!col) return;
         const v =
-          field === "nota_projeto" ||
+          field === "nota_final" ||
           field === "nota_prova" ||
           field === "frequencia"
             ? value === ""
