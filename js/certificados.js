@@ -597,6 +597,10 @@
           </tbody>
         </table>
       </div>
+      <!-- Scroll bar on bottom -->
+      <div id="certScrollBottom" style="overflow-x:auto;height:16px;margin-top:2px;border-radius:6px">
+        <div id="certScrollBottomSpacer" style="height:1px"></div>
+      </div>
     </div>`;
 
     // ── Events ──────────────────────────────────────────────────
@@ -684,22 +688,31 @@
       });
     }
 
-    // Sync top scrollbar with table scrollbar
+    // Sync top + bottom scrollbars with main table scrollbar
     const scrollMain = document.getElementById("certScrollMain");
     const scrollTop = document.getElementById("certScrollTop");
+    const scrollBottom = document.getElementById("certScrollBottom");
     const table = document.getElementById("certTable");
-    if (scrollMain && scrollTop && table) {
-      // Set spacer width to match table
+    if (scrollMain && table) {
       setTimeout(() => {
-        const spacer = document.getElementById("certScrollSpacer");
-        if (spacer) spacer.style.width = table.offsetWidth + "px";
+        const w = table.offsetWidth + "px";
+        const spacerTop = document.getElementById("certScrollSpacer");
+        const spacerBot = document.getElementById("certScrollBottomSpacer");
+        if (spacerTop) spacerTop.style.width = w;
+        if (spacerBot) spacerBot.style.width = w;
       }, 100);
-      scrollTop.addEventListener("scroll", () => {
-        scrollMain.scrollLeft = scrollTop.scrollLeft;
-      });
-      scrollMain.addEventListener("scroll", () => {
-        scrollTop.scrollLeft = scrollMain.scrollLeft;
-      });
+      const syncAll = (src) => {
+        const left = src.scrollLeft;
+        if (scrollMain && scrollMain !== src) scrollMain.scrollLeft = left;
+        if (scrollTop && scrollTop !== src) scrollTop.scrollLeft = left;
+        if (scrollBottom && scrollBottom !== src)
+          scrollBottom.scrollLeft = left;
+      };
+      if (scrollTop)
+        scrollTop.addEventListener("scroll", () => syncAll(scrollTop));
+      scrollMain.addEventListener("scroll", () => syncAll(scrollMain));
+      if (scrollBottom)
+        scrollBottom.addEventListener("scroll", () => syncAll(scrollBottom));
     }
   }
 
@@ -872,9 +885,9 @@
               <select id="cnStatus" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none">
                 <option value="">— selecione —</option>
                 <option value="Concluído com Êxito">Concluído com Êxito</option>
-                <option value="Certificado de Conclusão">Aprovado - Conclusão</option>
-                <option value="Certificado de Participação">Aprovado - Participação</option>
-                <option value="Certificado de Vinculação">Sem nota - Vínculo</option>
+                <option value="Certificado de Conclusão">Certificado de Conclusão</option>
+                <option value="Certificado de Participação">Certificado de Participação</option>
+                <option value="Certificado de Vinculação">Certificado de Vinculação</option>
               </select>
             </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -987,8 +1000,7 @@
         <div class="modal-fields" style="gap:12px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>CPF</label><input type="text" id="cfCpf" value="${r.cpf || ""}" placeholder="000.000.000-00" /></div>
-                        <div class="modal-field"><label>E-mail</label><input type="email" id="cfEmail" value="${r.email || ""}" placeholder="email@exemplo.com" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none" /></div>
-
+            <div class="modal-field"><label>E-mail</label><input type="email" id="cfEmail" value="${r.email || ""}" placeholder="email@exemplo.com" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none" /></div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>Cidade</label><input type="text" id="cfCidade" value="${r.cidade || ""}" placeholder="Fortaleza" /></div>
@@ -1012,10 +1024,10 @@
           <div class="modal-field"><label>Status</label>
               <select id="cfStatus" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none">
                 <option value="">— selecione —</option>
-                <option value="Concluído com Êxito"          $\{r.status === "Concluído com Êxito"          ? "selected" : ""}>Concluído com Êxito</option>
-                <option value="Certificado de Conclusão"     $\{r.status === "Certificado de Conclusão"     ? "selected" : ""}>Certificado de Conclusão</option>
-                <option value="Certificado de Participação"  $\{r.status === "Certificado de Participação"  ? "selected" : ""}>Certificado de Participação</option>
-                <option value="Certificado de Vinculação"    $\{r.status === "Certificado de Vinculação"    ? "selected" : ""}>Certificado de Vinculação</option>
+                <option value="Concluído com Êxito"        ${r.status === "Concluído com Êxito" ? "selected" : ""}>Concluído com Êxito</option>
+                <option value="Aprovado(a) - Certificação" ${r.status === "Aprovado(a) - Certificação" ? "selected" : ""}>Aprovado(a) - Certificação</option>
+                <option value="Aprovado(a) - Conclusão"    ${r.status === "Aprovado(a) - Conclusão" ? "selected" : ""}>Aprovado(a) - Conclusão</option>
+                <option value="Sem Nota - Vínculo"         ${r.status === "Sem Nota - Vínculo" ? "selected" : ""}>Sem Nota - Vínculo</option>
               </select>
             </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
