@@ -872,9 +872,9 @@
               <select id="cnStatus" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none">
                 <option value="">— selecione —</option>
                 <option value="Concluído com Êxito">Concluído com Êxito</option>
-                <option value="Certificado de Conclusão">Certificado de Conclusão</option>
-                <option value="Certificado de Participação">Certificado de Participação</option>
-                <option value="Certificado de Vinculação">Certificado de Vinculação</option>
+                <option value="Certificado de Conclusão">Aprovado - Conclusão</option>
+                <option value="Certificado de Participação">Aprovado - Participação</option>
+                <option value="Certificado de Vinculação">Sem nota - Vínculo</option>
               </select>
             </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
