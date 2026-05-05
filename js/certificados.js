@@ -421,6 +421,7 @@
   let _filterMedal = "";
   let _filterIncompleto = "";
   let _search = "";
+  let _fillMode = false;
 
   async function render() {
     const container = document.getElementById("certContent");
@@ -531,6 +532,13 @@
           <option value="completo"   ${_filterIncompleto === "completo" ? "selected" : ""}>✅ Todos completos</option>
         </select>
         <input type="file" id="certFileInput" accept=".xlsx" style="display:none" />
+        <label class="fill-toggle-wrap" for="certFillToggle" style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:6px 12px;background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-sm)">
+          <span class="toggle-switch">
+            <input type="checkbox" id="certFillToggle" />
+            <span class="toggle-track"></span>
+          </span>
+          <span style="font-size:13px;color:var(--text2);white-space:nowrap">✨ Preenchimento Inteligente</span>
+        </label>
       </div>
 
       <!-- Scroll bar on top -->
@@ -649,6 +657,14 @@
     document
       .getElementById("certBtnNovoAluno")
       ?.addEventListener("click", openNovoAlunoModal);
+    const certFillToggle = document.getElementById("certFillToggle");
+    if (certFillToggle) {
+      certFillToggle.checked = _fillMode;
+      certFillToggle.addEventListener("change", () => {
+        _fillMode = certFillToggle.checked;
+        _rerenderBody();
+      });
+    }
 
     // Sync top scrollbar with table scrollbar
     const scrollMain = document.getElementById("certScrollMain");
@@ -702,7 +718,15 @@
     const tdStyle = "padding:6px 8px;vertical-align:middle";
     return `<tr data-cert-id="${r.id}">
       <td style="${tdStyle};text-align:center;color:var(--text3);font-size:12px;width:36px">${i + 1}</td>
-      <td style="${tdStyle};font-weight:600;min-width:190px">${editCell("nome", r.nome)}</td>
+      <td style="${tdStyle};font-weight:600;min-width:190px;${_fillMode ? "cursor:pointer" : ""}"
+          onclick="${_fillMode ? `Cert._openFillModal('${r.id}')` : ""}"
+          title="${_fillMode ? "Clique para preencher" : ""}">
+        ${
+          _fillMode
+            ? `<span style="font-weight:600;color:var(--text1)">${(r.nome || "(sem nome)").replace(/</g, "&lt;")}</span>`
+            : editCell("nome", r.nome)
+        }
+      </td>
       <td style="${tdStyle};min-width:130px">${editCell("cpf", r.cpf)}</td>
       <td style="${tdStyle};min-width:180px">${editCell("email", r.email, "email")}</td>
       <td style="${tdStyle};min-width:110px">${editCell("cidade", r.cidade)}</td>
@@ -759,7 +783,7 @@
           <div class="modal-field"><label>Nome Completo *</label><input type="text" id="cnNome" placeholder="Nome completo do aluno" /></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>CPF</label><input type="text" id="cnCpf" placeholder="000.000.000-00" /></div>
-            <div class="modal-field"><label>E-mail</label><input type="email" id="cnEmail" placeholder="email@exemplo.com" /></div>
+            <div class="modal-field"><label>E-mail</label><input type="email" id="cnEmail" placeholder="email@exemplo.com" style="width:100%;box-sizing:border-box" /></div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>Cidade</label><input type="text" id="cnCidade" placeholder="Fortaleza" /></div>
@@ -843,8 +867,159 @@
     };
   }
 
+  function openCertFillModal(id) {
+    const idx = _filteredRows.findIndex((r) => r.id === id);
+    if (idx < 0) return;
+    _renderCertFillModal(idx);
+  }
+
+  function _renderCertFillModal(idx) {
+    const existing = document.getElementById("certFillOverlay");
+    if (existing) existing.remove();
+
+    const r = _filteredRows[idx];
+    const total = _filteredRows.length;
+    const overlay = document.createElement("div");
+    overlay.className = "modal-overlay";
+    overlay.id = "certFillOverlay";
+
+    const CERT_CSS = {
+      "Certificado de Conclusão": "aprovado",
+      "Certificado de Participação": "participacao",
+      "Certificado de Vinculação": "vinculacao",
+    };
+
+    overlay.innerHTML = `
+      <div class="modal-box" style="max-width:520px">
+        <button class="modal-close" id="cfClose">✕</button>
+        <div class="modal-header">
+          <div class="modal-icon">✨</div>
+          <div class="modal-title-wrap">
+            <div class="modal-title">Preenchimento Inteligente</div>
+            <div class="modal-subtitle">Aluno ${idx + 1} de ${total}</div>
+          </div>
+        </div>
+        <div style="background:var(--bg2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-weight:600;color:var(--accent);font-size:14px">
+          👤 ${r.nome || "(sem nome)"}
+        </div>
+        <div class="modal-fields" style="gap:12px">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="modal-field"><label>CPF</label><input type="text" id="cfCpf" value="${r.cpf || ""}" placeholder="000.000.000-00" /></div>
+            <div class="modal-field"><label>E-mail</label><input type="email" id="cfEmail" value="${r.email || ""}" placeholder="email@exemplo.com" style="width:100%;box-sizing:border-box" /></div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="modal-field"><label>Cidade</label><input type="text" id="cfCidade" value="${r.cidade || ""}" placeholder="Fortaleza" /></div>
+            <div class="modal-field"><label>Modalidade</label>
+              <select id="cfModalidade">
+                <option value="">— selecione —</option>
+                <option value="Online" ${r.modalidade === "Online" ? "selected" : ""}>Online</option>
+                <option value="Presencial" ${r.modalidade === "Presencial" ? "selected" : ""}>Presencial</option>
+              </select>
+            </div>
+          </div>
+          <div class="modal-field"><label>Curso/Formação</label><input type="text" id="cfFormacao" value="${r.formacao || ""}" /></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="modal-field"><label>Nota Final</label><input type="number" id="cfNota" value="${r.nota_final ?? ""}" min="0" max="10" step="0.1" /></div>
+            <div class="modal-field"><label>Frequência (%)</label><input type="number" id="cfFreq" value="${r.frequencia ?? ""}" min="0" max="100" step="1" /></div>
+          </div>
+          <div class="modal-field"><label>Status</label><input type="text" id="cfStatus" value="${r.status || ""}" /></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div class="modal-field"><label>Certificado</label>
+              <select id="cfCert">
+                <option value="">— selecione —</option>
+                <option value="Certificado de Conclusão"    ${r.certificado === "Certificado de Conclusão" ? "selected" : ""}>Certificado de Conclusão</option>
+                <option value="Certificado de Participação" ${r.certificado === "Certificado de Participação" ? "selected" : ""}>Certificado de Participação</option>
+                <option value="Certificado de Vinculação"   ${r.certificado === "Certificado de Vinculação" ? "selected" : ""}>Certificado de Vinculação</option>
+              </select>
+            </div>
+            <div class="modal-field"><label>Medalha</label>
+              <select id="cfMedalha">
+                <option value="">— nenhuma —</option>
+                <option value="ouro"   ${(r.medalha || "").toLowerCase() === "ouro" ? "selected" : ""}>🥇 Ouro</option>
+                <option value="prata"  ${(r.medalha || "").toLowerCase() === "prata" ? "selected" : ""}>🥈 Prata</option>
+                <option value="bronze" ${(r.medalha || "").toLowerCase() === "bronze" ? "selected" : ""}>🥉 Bronze</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn-modal-cancel" id="cfCancel">Cancelar</button>
+          <button class="btn-modal-apply" id="cfApply">✓ Aplicar</button>
+        </div>
+        <div class="modal-nav" id="cfNav">
+          <button class="btn-modal-nav" id="cfPrev" ${idx === 0 ? "disabled" : ""}>← Anterior</button>
+          <span class="modal-nav-info">${idx + 1} / ${total}</span>
+          <button class="btn-modal-nav" id="cfNext" ${idx === total - 1 ? "disabled" : ""}>Próximo →</button>
+        </div>
+      </div>`;
+
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+    document.getElementById("cfClose").onclick = close;
+    document.getElementById("cfCancel").onclick = close;
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) close();
+    });
+
+    document.getElementById("cfPrev").onclick = () => {
+      close();
+      _renderCertFillModal(idx - 1);
+    };
+    document.getElementById("cfNext").onclick = () => {
+      close();
+      _renderCertFillModal(idx + 1);
+    };
+
+    // Keyboard navigation
+    overlay.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowLeft" && idx > 0) {
+        close();
+        _renderCertFillModal(idx - 1);
+      }
+      if (e.key === "ArrowRight" && idx < total - 1) {
+        close();
+        _renderCertFillModal(idx + 1);
+      }
+      if (e.key === "Enter") document.getElementById("cfApply").click();
+      if (e.key === "Escape") close();
+    });
+    // Focus first field
+    setTimeout(() => document.getElementById("cfCpf")?.focus(), 50);
+
+    document.getElementById("cfApply").onclick = async () => {
+      const updates = {
+        cpf: document.getElementById("cfCpf").value.trim() || null,
+        email: document.getElementById("cfEmail").value.trim() || null,
+        cidade: document.getElementById("cfCidade").value.trim() || null,
+        modalidade: document.getElementById("cfModalidade").value || null,
+        formacao: document.getElementById("cfFormacao").value.trim() || null,
+        nota_final: parseFloat(document.getElementById("cfNota").value) || null,
+        frequencia: parseFloat(document.getElementById("cfFreq").value) || null,
+        status: document.getElementById("cfStatus").value.trim() || null,
+        certificado: document.getElementById("cfCert").value || null,
+        medalha: document.getElementById("cfMedalha").value || null,
+      };
+      try {
+        await patchRow(r.id, updates);
+        Object.assign(r, updates);
+        // Update in _allRows too
+        const allRow = _allRows.find((x) => x.id === r.id);
+        if (allRow) Object.assign(allRow, updates);
+        _rerenderBody();
+        close();
+        toast("Salvo!", "success");
+        // Auto-advance to next if exists
+        if (idx < total - 1) _renderCertFillModal(idx + 1);
+      } catch (err) {
+        toast("Erro ao salvar: " + err.message, "error");
+      }
+    };
+  }
+
   // ── Handlers expostos ─────────────────────────────────────────
   window.Cert = {
+    _openFillModal: (id) => openCertFillModal(id),
     _onTextChange: async (id, field, value) => {
       try {
         const col = {
