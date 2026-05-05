@@ -987,7 +987,8 @@
         <div class="modal-fields" style="gap:12px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>CPF</label><input type="text" id="cfCpf" value="${r.cpf || ""}" placeholder="000.000.000-00" /></div>
-            <div class="modal-field"><label>E-mail</label><input type="email" id="cfEmail" value="${r.email || ""}" placeholder="email@exemplo.com" style="width:100%;box-sizing:border-box" /></div>
+                        <div class="modal-field"><label>E-mail</label><input type="email" id="cfEmail" value="${r.email || ""}" placeholder="email@exemplo.com" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none" /></div>
+
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>Cidade</label><input type="text" id="cfCidade" value="${r.cidade || ""}" placeholder="Fortaleza" /></div>
