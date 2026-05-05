@@ -691,6 +691,51 @@
     }
   }
 
+  // Célula de nota: permite número ou "Não entregou"
+  function notaCell(field, value, id) {
+    const NAO_ENTREGOU = "Não entregou";
+    const isNE = value === NAO_ENTREGOU;
+    const numVal = !isNE && value != null ? value : "";
+    const inputStyle =
+      "width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;outline:none;font-family:var(--font);font-size:12.5px;color:var(--text1);padding:4px 8px;transition:border-color .15s,box-shadow .15s;box-sizing:border-box;-moz-appearance:textfield;appearance:textfield";
+    if (isNE) {
+      return (
+        '<div style="display:flex;gap:4px;align-items:center">' +
+        '<span style="font-size:11px;color:var(--text3);white-space:nowrap;flex:1">Não entregou</span>' +
+        "<button onclick=\"Cert._clearNota(event,'" +
+        id +
+        "','" +
+        field +
+        '\')" title="Limpar"' +
+        ' style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;padding:2px">✕</button>' +
+        "</div>"
+      );
+    }
+    return (
+      '<div style="display:flex;gap:3px;align-items:center">' +
+      '<input type="number" value="' +
+      (numVal !== "" ? numVal : "") +
+      '" min="0" max="10" step="0.1"' +
+      ' style="' +
+      inputStyle +
+      '"' +
+      " onfocus=\"this.style.borderColor='var(--accent)';this.style.boxShadow='0 0 0 2px rgba(74,125,245,0.15)'\"" +
+      " onblur=\"this.style.borderColor='var(--border)';this.style.boxShadow='none'\"" +
+      " onchange=\"Cert._onTextChange('" +
+      id +
+      "','" +
+      field +
+      "',this.value)\" />" +
+      "<button onclick=\"Cert._setNaoEntregou(event,'" +
+      id +
+      "','" +
+      field +
+      '\')" title="Não entregou"' +
+      ' style="background:none;border:1px solid var(--border);border-radius:4px;cursor:pointer;color:var(--text3);font-size:10px;padding:2px 4px;white-space:nowrap;flex-shrink:0">NE</button>' +
+      "</div>"
+    );
+  }
+
   // ── Build row ─────────────────────────────────────────────────
   function _buildRow(r, i) {
     const CERT_CSS = {
@@ -738,8 +783,8 @@
       <td style="${tdStyle};min-width:110px">${editCell("cidade", r.cidade)}</td>
       <td style="${tdStyle};min-width:100px">${editCell("modalidade", r.modalidade)}</td>
       <td style="${tdStyle};min-width:160px">${editCell("formacao", r.formacao)}</td>
-      <td style="${tdStyle};width:90px">${editCell("nota_final", r.nota_final, "number", 'min="0" max="10" step="0.1"')}</td>
-      <td style="${tdStyle};width:90px">${editCell("nota_prova", r.nota_prova, "number", 'min="0" max="10" step="0.1"')}</td>
+      <td style="${tdStyle};width:110px">${notaCell("nota_final", r.nota_final, r.id)}</td>
+      <td style="${tdStyle};width:110px">${notaCell("nota_prova", r.nota_prova, r.id)}</td>
       <td style="${tdStyle};width:90px">${editCell("frequencia", r.frequencia, "number", 'min="0" max="100" step="1"')}</td>
       <td style="${tdStyle};min-width:160px">${editCell("status", r.status)}</td>
       <td style="${tdStyle};min-width:220px">
@@ -790,7 +835,7 @@
           <div class="modal-field"><label>Nome Completo *</label><input type="text" id="cnNome" placeholder="Nome completo do aluno" /></div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>CPF</label><input type="text" id="cnCpf" placeholder="000.000.000-00" /></div>
-            <div class="modal-field"><label>E-mail</label><input type="email" id="cnEmail" placeholder="email@exemplo.com" style="width:100%;box-sizing:border-box" /></div>
+            <div class="modal-field"><label>E-mail</label><input type="email" id="cnEmail" placeholder="email@exemplo.com" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none" /></div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>Cidade</label><input type="text" id="cnCidade" placeholder="Fortaleza" /></div>
@@ -811,7 +856,15 @@
             <div class="modal-field"><label>Frequência (%)</label><input type="number" id="cnFreq" min="0" max="100" step="1" placeholder="0" /></div>
             <div></div>
           </div>
-          <div class="modal-field"><label>Status</label><input type="text" id="cnStatus" placeholder="Ex: Certificado de Conclusão" /></div>
+          <div class="modal-field"><label>Status</label>
+              <select id="cnStatus" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none">
+                <option value="">— selecione —</option>
+                <option value="Concluído com Êxito">Concluído com Êxito</option>
+                <option value="Certificado de Conclusão">Certificado de Conclusão</option>
+                <option value="Certificado de Participação">Certificado de Participação</option>
+                <option value="Certificado de Vinculação">Certificado de Vinculação</option>
+              </select>
+            </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>Certificado</label>
               <select id="cnCert">
@@ -912,8 +965,12 @@
             <div class="modal-subtitle">Aluno ${idx + 1} de ${total}</div>
           </div>
         </div>
-        <div style="background:var(--bg2);border-radius:8px;padding:10px 14px;margin-bottom:14px;font-weight:600;color:var(--accent);font-size:14px">
-          👤 ${r.nome || "(sem nome)"}
+        <div style="margin-bottom:14px">
+          <label style="font-size:11px;font-weight:600;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;display:block;margin-bottom:6px">Nome Completo</label>
+          <input type="text" id="cfNome" value="${r.nome || ""}"
+            style="width:100%;background:var(--bg2);border:1px solid var(--accent);border-radius:8px;padding:10px 14px;font-weight:600;color:var(--accent);font-size:14px;font-family:var(--font);outline:none;box-sizing:border-box"
+            onfocus="this.style.borderColor='var(--accent)'"
+            onblur="this.style.borderColor='var(--accent)'" />
         </div>
         <div class="modal-fields" style="gap:12px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -939,7 +996,15 @@
             <div class="modal-field"><label>Frequência (%)</label><input type="number" id="cfFreq" value="${r.frequencia ?? ""}" min="0" max="100" step="1" /></div>
             <div></div>
           </div>
-          <div class="modal-field"><label>Status</label><input type="text" id="cfStatus" value="${r.status || ""}" /></div>
+          <div class="modal-field"><label>Status</label>
+              <select id="cfStatus" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none">
+                <option value="">— selecione —</option>
+                <option value="Concluído com Êxito"          $\{r.status === "Concluído com Êxito"          ? "selected" : ""}>Concluído com Êxito</option>
+                <option value="Certificado de Conclusão"     $\{r.status === "Certificado de Conclusão"     ? "selected" : ""}>Certificado de Conclusão</option>
+                <option value="Certificado de Participação"  $\{r.status === "Certificado de Participação"  ? "selected" : ""}>Certificado de Participação</option>
+                <option value="Certificado de Vinculação"    $\{r.status === "Certificado de Vinculação"    ? "selected" : ""}>Certificado de Vinculação</option>
+              </select>
+            </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>Certificado</label>
               <select id="cfCert">
@@ -1006,6 +1071,7 @@
 
     document.getElementById("cfApply").onclick = async () => {
       const updates = {
+        nome: document.getElementById("cfNome").value.trim() || r.nome,
         cpf: document.getElementById("cfCpf").value.trim() || null,
         email: document.getElementById("cfEmail").value.trim() || null,
         cidade: document.getElementById("cfCidade").value.trim() || null,
@@ -1039,6 +1105,28 @@
   // ── Handlers expostos ─────────────────────────────────────────
   window.Cert = {
     _openFillModal: (id) => openCertFillModal(id),
+    _setNaoEntregou: async (e, id, field) => {
+      e.preventDefault();
+      try {
+        await patchField(id, field, "Não entregou");
+        const row = _allRows.find((r) => r.id === id);
+        if (row) row[field] = "Não entregou";
+        _rerenderBody();
+      } catch (err) {
+        toast("Erro: " + err.message, "error");
+      }
+    },
+    _clearNota: async (e, id, field) => {
+      e.preventDefault();
+      try {
+        await patchField(id, field, null);
+        const row = _allRows.find((r) => r.id === id);
+        if (row) row[field] = null;
+        _rerenderBody();
+      } catch (err) {
+        toast("Erro: " + err.message, "error");
+      }
+    },
     _onTextChange: async (id, field, value) => {
       try {
         const col = {
@@ -1055,13 +1143,17 @@
         }[field];
         if (!col) return;
         const v =
-          field === "nota_final" ||
-          field === "nota_prova" ||
-          field === "frequencia"
+          field === "nota_final" || field === "nota_prova"
             ? value === ""
               ? null
-              : parseFloat(value)
-            : value.trim() || null;
+              : isNaN(parseFloat(value))
+                ? value
+                : parseFloat(value)
+            : field === "frequencia"
+              ? value === ""
+                ? null
+                : parseFloat(value)
+              : value.trim() || null;
         await patchField(id, col, v);
         const row = _allRows.find((r) => r.id === id);
         if (row) row[field] = v;
