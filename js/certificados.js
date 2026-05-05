@@ -130,7 +130,18 @@
 
         const rankInfo = window._rankMapForModal?.get(s.id);
         const medalha = s.medalhaManual || rankInfo?.medalha || null;
-        const nota = GT.calcNotaMedia(s);
+
+        // nota_final: usa calcNotaMedia; para presenciais pega notaProjetoFinal diretamente
+        // se calcNotaMedia retornar null (presencial sem nota 10), ainda usa notaProjetoFinal
+        let nota = GT.calcNotaMedia(s);
+        if (nota == null && s.notaProjetoFinal) {
+          nota = parseFloat(s.notaProjetoFinal) || null;
+        }
+
+        // nota_prova: preenche automaticamente com nota_prova_rec do sistema
+        const notaProva =
+          s.notaProvaRec != null ? parseFloat(s.notaProvaRec) || null : null;
+
         const freq = parseFloat(s.presencaFinalPlat) || null;
 
         const certLabel =
@@ -148,6 +159,7 @@
           const updates = {
             formacao: f.label,
             nota_final: nota ?? existing_row.nota_final ?? null,
+            nota_prova: notaProva ?? existing_row.nota_prova ?? null,
             frequencia: freq ?? existing_row.frequencia ?? null,
             status: statusObj.label,
             certificado: existing_row.certificado || certLabel,
@@ -171,7 +183,7 @@
             modalidade: f.presencial ? "Presencial" : "Online",
             formacao: f.label,
             nota_final: nota ?? null,
-            nota_prova: null,
+            nota_prova: notaProva ?? null,
             frequencia: freq ?? null,
             status: statusObj.label,
             certificado: certLabel,
