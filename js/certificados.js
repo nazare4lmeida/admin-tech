@@ -598,18 +598,40 @@
         </table>
       </div>
     </div>`;
-    // Scroll bar on bottom
+
+    // Inject fixed bottom scroll bar aligned with certScrollMain
     setTimeout(() => {
-      const existing = document.getElementById("certScrollBottom");
-      if (existing) existing.remove();
-      const scrollEl = document.createElement("div");
-      scrollEl.id = "certScrollBottom";
-      scrollEl.style.cssText =
-        "overflow-x:auto;height:14px;position:sticky;bottom:0;background:var(--bg1);z-index:20;border-top:1px solid var(--border2);margin:0 -24px;padding:0 24px";
-      scrollEl.innerHTML =
+      const old = document.getElementById("certScrollBottom");
+      if (old) old.remove();
+      const mainEl = document.getElementById("certScrollMain");
+      if (!mainEl) return;
+      const rect = mainEl.getBoundingClientRect();
+      const el = document.createElement("div");
+      el.id = "certScrollBottom";
+      el.style.cssText =
+        "overflow-x:auto;height:14px;position:fixed;bottom:0;left:" +
+        rect.left +
+        "px;width:" +
+        rect.width +
+        "px;background:var(--bg1);z-index:100;border-top:1px solid var(--border2)";
+      el.innerHTML =
         '<div id="certScrollBottomSpacer" style="height:1px"></div>';
-      container.appendChild(scrollEl);
-    }, 50);
+      document.body.appendChild(el);
+      // Reposition on resize
+      const onResize = () => {
+        const r2 = document
+          .getElementById("certScrollMain")
+          ?.getBoundingClientRect();
+        const e2 = document.getElementById("certScrollBottom");
+        if (r2 && e2) {
+          e2.style.left = r2.left + "px";
+          e2.style.width = r2.width + "px";
+        }
+      };
+      window.removeEventListener("resize", window._certResizeFn);
+      window._certResizeFn = onResize;
+      window.addEventListener("resize", onResize);
+    }, 200);
 
     // ── Events ──────────────────────────────────────────────────
     document.getElementById("certSearch")?.addEventListener("input", (e) => {
@@ -734,13 +756,13 @@
     if (isNE) {
       return (
         '<div style="display:flex;gap:4px;align-items:center">' +
-        '<span style="font-size:11px;color:var(--text1);white-space:nowrap;flex:1">Não entregou</span>' +
+        '<span style="font-size:11px;color:var(--text3);white-space:nowrap;flex:1">Não entregou</span>' +
         "<button onclick=\"Cert._clearNota(event,'" +
         id +
         "','" +
         field +
         '\')" title="Limpar"' +
-        ' style="background:none;border:none;cursor:pointer;color:var(--text1);font-size:11px;padding:2px">✕</button>' +
+        ' style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;padding:2px">✕</button>' +
         "</div>"
       );
     }
@@ -820,7 +842,7 @@
       <td style="${tdStyle};width:110px">${notaCell("nota_prova", r.nota_prova, r.id)}</td>
       <td style="${tdStyle};width:90px">${editCell("frequencia", r.frequencia, "number", 'min="0" max="100" step="1"')}</td>
       <td style="${tdStyle};min-width:180px">
-        <select class="status-badge vazio" style="width:100%;cursor:pointer;font-size:12px;color:var(--text1)"
+        <select class="status-badge vazio" style="width:100%;cursor:pointer;font-size:12px"
           onchange="Cert._onFieldChange('${r.id}','status',this.value,this)">
           <option value="" ${!r.status ? "selected" : ""}>— selecione —</option>
           <option value="Concluído com Êxito"        ${r.status === "Concluído com Êxito" ? "selected" : ""}>Concluído com Êxito</option>
