@@ -597,8 +597,8 @@
           </tbody>
         </table>
       </div>
-      <!-- Scroll bar on bottom -->
-      <div id="certScrollBottom" style="overflow-x:auto;height:16px;margin-top:2px;border-radius:6px">
+      <!-- Scroll bar sticky on bottom -->
+      <div id="certScrollBottom" style="overflow-x:auto;height:16px;margin-top:2px;border-radius:6px;position:sticky;bottom:0;background:var(--bg1);z-index:10;padding:2px 0">
         <div id="certScrollBottomSpacer" style="height:1px"></div>
       </div>
     </div>`;
@@ -811,7 +811,16 @@
       <td style="${tdStyle};width:110px">${notaCell("nota_final", r.nota_final, r.id)}</td>
       <td style="${tdStyle};width:110px">${notaCell("nota_prova", r.nota_prova, r.id)}</td>
       <td style="${tdStyle};width:90px">${editCell("frequencia", r.frequencia, "number", 'min="0" max="100" step="1"')}</td>
-      <td style="${tdStyle};min-width:160px">${editCell("status", r.status)}</td>
+      <td style="${tdStyle};min-width:180px">
+        <select class="status-badge vazio" style="width:100%;cursor:pointer;font-size:12px"
+          onchange="Cert._onFieldChange('${r.id}','status',this.value,this)">
+          <option value="" ${!r.status ? "selected" : ""}>— selecione —</option>
+          <option value="Concluído com Êxito"        ${r.status === "Concluído com Êxito" ? "selected" : ""}>Concluído com Êxito</option>
+          <option value="Aprovado(a) - Certificação" ${r.status === "Aprovado(a) - Certificação" ? "selected" : ""}>Aprovado(a) - Certificação</option>
+          <option value="Aprovado(a) - Conclusão"    ${r.status === "Aprovado(a) - Conclusão" ? "selected" : ""}>Aprovado(a) - Conclusão</option>
+          <option value="Sem Nota - Vínculo"         ${r.status === "Sem Nota - Vínculo" ? "selected" : ""}>Sem Nota - Vínculo</option>
+        </select>
+      </td>
       <td style="${tdStyle};min-width:220px">
         <select class="status-badge ${certClass}" style="width:100%;cursor:pointer" onchange="Cert._onFieldChange('${r.id}','certificado',this.value,this)">
           ${certOpts}
@@ -885,9 +894,9 @@
               <select id="cnStatus" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none">
                 <option value="">— selecione —</option>
                 <option value="Concluído com Êxito">Concluído com Êxito</option>
-                <option value="Certificado de Conclusão">Certificado de Conclusão</option>
-                <option value="Certificado de Participação">Certificado de Participação</option>
-                <option value="Certificado de Vinculação">Certificado de Vinculação</option>
+                <option value="Aprovado(a) - Certificação">Aprovado(a) - Certificação</option>
+                <option value="Aprovado(a) - Conclusão">Aprovado(a) - Conclusão</option>
+                <option value="Sem Nota - Vínculo">Sem Nota - Vínculo</option>
               </select>
             </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
@@ -1000,7 +1009,7 @@
         <div class="modal-fields" style="gap:12px">
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>CPF</label><input type="text" id="cfCpf" value="${r.cpf || ""}" placeholder="000.000.000-00" /></div>
-            <div class="modal-field"><label>E-mail</label><input type="email" id="cfEmail" value="${r.email || ""}" placeholder="email@exemplo.com" style="width:100%;box-sizing:border-box;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none" /></div>
+            <div class="modal-field"><label>E-mail</label><input type="email" id="cfEmail" value="${r.email || ""}" placeholder="email@exemplo.com" style="width:100%;box-sizing:border-box" /></div>
           </div>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
             <div class="modal-field"><label>Cidade</label><input type="text" id="cfCidade" value="${r.cidade || ""}" placeholder="Fortaleza" /></div>
@@ -1025,7 +1034,7 @@
               <select id="cfStatus" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none">
                 <option value="">— selecione —</option>
                 <option value="Concluído com Êxito"        ${r.status === "Concluído com Êxito" ? "selected" : ""}>Concluído com Êxito</option>
-                <option value="Aprovado(a) - Participação" ${r.status === "Aprovado(a) - Participação" ? "selected" : ""}>Aprovado(a) - Participação</option>
+                <option value="Aprovado(a) - Certificação" ${r.status === "Aprovado(a) - Certificação" ? "selected" : ""}>Aprovado(a) - Certificação</option>
                 <option value="Aprovado(a) - Conclusão"    ${r.status === "Aprovado(a) - Conclusão" ? "selected" : ""}>Aprovado(a) - Conclusão</option>
                 <option value="Sem Nota - Vínculo"         ${r.status === "Sem Nota - Vínculo" ? "selected" : ""}>Sem Nota - Vínculo</option>
               </select>
