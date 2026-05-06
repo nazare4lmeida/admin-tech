@@ -597,11 +597,19 @@
           </tbody>
         </table>
       </div>
-      <!-- Scroll bar sticky on bottom -->
-      <div id="certScrollBottom" style="overflow-x:auto;height:16px;margin-top:2px;border-radius:6px;position:sticky;bottom:0;background:var(--bg1);z-index:10;padding:2px 0">
-        <div id="certScrollBottomSpacer" style="height:1px"></div>
-      </div>
     </div>`;
+    // Scroll bar on bottom
+    setTimeout(() => {
+      const existing = document.getElementById("certScrollBottom");
+      if (existing) existing.remove();
+      const scrollEl = document.createElement("div");
+      scrollEl.id = "certScrollBottom";
+      scrollEl.style.cssText =
+        "overflow-x:auto;height:14px;position:sticky;bottom:0;background:var(--bg1);z-index:20;border-top:1px solid var(--border2);margin:0 -24px;padding:0 24px";
+      scrollEl.innerHTML =
+        '<div id="certScrollBottomSpacer" style="height:1px"></div>';
+      container.appendChild(scrollEl);
+    }, 50);
 
     // ── Events ──────────────────────────────────────────────────
     document.getElementById("certSearch")?.addEventListener("input", (e) => {
