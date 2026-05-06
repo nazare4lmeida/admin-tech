@@ -161,7 +161,7 @@
             nota_final: nota ?? existing_row.nota_final ?? null,
             nota_prova: notaProva ?? existing_row.nota_prova ?? null,
             frequencia: freq ?? existing_row.frequencia ?? null,
-            status: statusObj.label,
+            status: existing_row.status || statusObj.label,
             certificado: existing_row.certificado || certLabel,
             medalha: existing_row.medalha || medalha || null,
           };
@@ -816,7 +816,7 @@
           onchange="Cert._onFieldChange('${r.id}','status',this.value,this)">
           <option value="" ${!r.status ? "selected" : ""}>— selecione —</option>
           <option value="Concluído com Êxito"        ${r.status === "Concluído com Êxito" ? "selected" : ""}>Concluído com Êxito</option>
-          <option value="Aprovado(a) - Certificação" ${r.status === "Aprovado(a) - Certificação" ? "selected" : ""}>Aprovado(a) - Certificação</option>
+          <option value="Aprovado(a) - Participação" ${r.status === "Aprovado(a) - Participação" ? "selected" : ""}>Aprovado(a) - Participação</option>
           <option value="Aprovado(a) - Conclusão"    ${r.status === "Aprovado(a) - Conclusão" ? "selected" : ""}>Aprovado(a) - Conclusão</option>
           <option value="Sem Nota - Vínculo"         ${r.status === "Sem Nota - Vínculo" ? "selected" : ""}>Sem Nota - Vínculo</option>
         </select>
@@ -894,7 +894,7 @@
               <select id="cnStatus" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none">
                 <option value="">— selecione —</option>
                 <option value="Concluído com Êxito">Concluído com Êxito</option>
-                <option value="Aprovado(a) - Certificação">Aprovado(a) - Certificação</option>
+                <option value="Aprovado(a) - Participação">Aprovado(a) - Participação</option>
                 <option value="Aprovado(a) - Conclusão">Aprovado(a) - Conclusão</option>
                 <option value="Sem Nota - Vínculo">Sem Nota - Vínculo</option>
               </select>
@@ -1034,7 +1034,7 @@
               <select id="cfStatus" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:8px 10px;font-family:var(--font);font-size:13px;color:var(--text1);outline:none">
                 <option value="">— selecione —</option>
                 <option value="Concluído com Êxito"        ${r.status === "Concluído com Êxito" ? "selected" : ""}>Concluído com Êxito</option>
-                <option value="Aprovado(a) - Certificação" ${r.status === "Aprovado(a) - Certificação" ? "selected" : ""}>Aprovado(a) - Certificação</option>
+                <option value="Aprovado(a) - Participação" ${r.status === "Aprovado(a) - Participação" ? "selected" : ""}>Aprovado(a) - Participação</option>
                 <option value="Aprovado(a) - Conclusão"    ${r.status === "Aprovado(a) - Conclusão" ? "selected" : ""}>Aprovado(a) - Conclusão</option>
                 <option value="Sem Nota - Vínculo"         ${r.status === "Sem Nota - Vínculo" ? "selected" : ""}>Sem Nota - Vínculo</option>
               </select>
