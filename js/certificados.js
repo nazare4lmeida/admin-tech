@@ -726,13 +726,13 @@
     if (isNE) {
       return (
         '<div style="display:flex;gap:4px;align-items:center">' +
-        '<span style="font-size:11px;color:var(--text3);white-space:nowrap;flex:1">Não entregou</span>' +
+        '<span style="font-size:11px;color:var(--text1);white-space:nowrap;flex:1">Não entregou</span>' +
         "<button onclick=\"Cert._clearNota(event,'" +
         id +
         "','" +
         field +
         '\')" title="Limpar"' +
-        ' style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:11px;padding:2px">✕</button>' +
+        ' style="background:none;border:none;cursor:pointer;color:var(--text1);font-size:11px;padding:2px">✕</button>' +
         "</div>"
       );
     }
@@ -812,7 +812,7 @@
       <td style="${tdStyle};width:110px">${notaCell("nota_prova", r.nota_prova, r.id)}</td>
       <td style="${tdStyle};width:90px">${editCell("frequencia", r.frequencia, "number", 'min="0" max="100" step="1"')}</td>
       <td style="${tdStyle};min-width:180px">
-        <select class="status-badge vazio" style="width:100%;cursor:pointer;font-size:12px"
+        <select class="status-badge vazio" style="width:100%;cursor:pointer;font-size:12px;color:var(--text1)"
           onchange="Cert._onFieldChange('${r.id}','status',this.value,this)">
           <option value="" ${!r.status ? "selected" : ""}>— selecione —</option>
           <option value="Concluído com Êxito"        ${r.status === "Concluído com Êxito" ? "selected" : ""}>Concluído com Êxito</option>
