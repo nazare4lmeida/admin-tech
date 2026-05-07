@@ -565,7 +565,7 @@
       // ── Edge Function (segura — não expõe chaves nem dados de outros alunos) ──
       function getFunctionUrl() {
         const base = (window.ENV?.SUPABASE_URL || "").replace(/\/+$/, "");
-        return base + "/functions/v1/get-aluno-dados";
+        return base + "/functions/v1/get-alunos-dados";
       }
 
       async function buscarPorCpf(cpf) {
