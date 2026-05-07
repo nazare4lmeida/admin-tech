@@ -257,51 +257,27 @@
             if (isNaN(n)) return null;
             return n > 0 && n <= 1 ? Math.round(n * 1000) / 10 : n;
           };
+          if (match) {
+            // Preenche APENAS cpf, email e cidade — só se vier preenchido na planilha
+            // Não apaga nem altera nenhum outro campo
+            const patch = {};
+            const cpfVal = (m.cpf || "").toString().trim();
+            const emailVal = (m.email || "").toString().trim();
+            const cidadeVal = (m.cidade || "").toString().trim();
+            if (cpfVal) patch.cpf = cpfVal;
+            if (emailVal) patch.email = emailVal;
+            if (cidadeVal) patch.cidade = cidadeVal;
 
-          for (const raw of rows) {
-            const m = mapRow(raw);
-            const nome = (m.nome || "").toString().trim();
-            if (!nome) {
+            if (Object.keys(patch).length > 0) {
+              await patchRow(match.id, patch);
+              Object.assign(match, patch);
+              updated++;
+            } else {
               skipped++;
-              continue;
             }
-
-            const match = existing.find(
-              (e) => normalizar(e.nome) === normalizar(nome),
-            );
-
-            const row = {
-              id:
-                match?.id ||
-                "cert_" +
-                  Date.now() +
-                  "_" +
-                  Math.random().toString(36).slice(2, 6),
-              nome,
-              cpf: (m.cpf || "").toString().trim() || match?.cpf || null,
-              email: (m.email || "").toString().trim() || match?.email || null,
-              cidade:
-                (m.cidade || "").toString().trim() || match?.cidade || null,
-              modalidade:
-                (m.modalidade || "").toString().trim() ||
-                match?.modalidade ||
-                null,
-              formacao:
-                (m.formacao || "").toString().trim() || match?.formacao || null,
-              nota_final: normPct(m.nota_final) ?? match?.nota_final ?? null,
-              nota_prova: normPct(m.nota_prova) ?? match?.nota_prova ?? null,
-              frequencia: normPct(m.frequencia) ?? match?.frequencia ?? null,
-              status:
-                (m.status || match?.status || "").toString().trim() || null,
-              certificado:
-                (m.certificado || match?.certificado || "").toString().trim() ||
-                null,
-              medalha:
-                (m.medalha || match?.medalha || "").toString().trim() || null,
-            };
-
-            await upsert(row);
-            match ? updated++ : added++;
+          } else {
+            // Nome não encontrado na tabela — ignora, não cria novo aluno
+            skipped++;
           }
 
           toast(
