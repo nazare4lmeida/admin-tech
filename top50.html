@@ -1,0 +1,1139 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geração Tech — Top 50 Alunos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ── Reset & base ───────────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        font-size: 15px;
+      }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background: #16181f;
+        color: #b8bdd0;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 24px 16px 48px;
+      }
+
+      /* ── Orbs decorativos ───────────────────────────────────── */
+      .bg-orbs {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        overflow: hidden;
+        z-index: 0;
+      }
+      .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.12;
+      }
+      .orb1 {
+        width: 420px;
+        height: 420px;
+        background: #3768db;
+        top: -120px;
+        left: -100px;
+      }
+      .orb2 {
+        width: 340px;
+        height: 340px;
+        background: #7b4fff;
+        bottom: -80px;
+        right: -60px;
+      }
+      .orb3 {
+        width: 220px;
+        height: 220px;
+        background: #daae37;
+        top: 50%;
+        left: 60%;
+      }
+
+      /* ── Wrapper principal ──────────────────────────────────── */
+      .wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 680px;
+      }
+
+      /* ── Logo / header ──────────────────────────────────────── */
+      .header {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 32px;
+      }
+      .logo-mark {
+        width: 52px;
+        height: 52px;
+        background: linear-gradient(135deg, #3768db, #7b4fff);
+        border-radius: 13px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 17px;
+        font-weight: 800;
+        color: #fff;
+        letter-spacing: -0.5px;
+        flex-shrink: 0;
+      }
+      .logo-text {
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      .logo-main {
+        font-size: 19px;
+        font-weight: 700;
+        color: #cdd2e8;
+        line-height: 1.1;
+      }
+      .logo-sub {
+        font-size: 10.5px;
+        color: #4e5570;
+        letter-spacing: 0.09em;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+
+      /* ── Hero / título ──────────────────────────────────────── */
+      .hero {
+        background: #1c1f28;
+        border: 1px solid #2a2f42;
+        border-radius: 20px;
+        padding: 32px 32px 28px;
+        margin-bottom: 24px;
+        text-align: center;
+      }
+      .hero-trophy {
+        font-size: 52px;
+        display: block;
+        margin-bottom: 14px;
+        line-height: 1;
+      }
+      .hero h1 {
+        font-size: 22px;
+        font-weight: 800;
+        color: #cdd2e8;
+        margin-bottom: 8px;
+        letter-spacing: -0.3px;
+      }
+      .hero p {
+        font-size: 13.5px;
+        color: #4e5570;
+        line-height: 1.6;
+        max-width: 440px;
+        margin: 0 auto;
+      }
+
+      /* ── Tabs ───────────────────────────────────────────────── */
+      .tabs {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 20px;
+      }
+      .tab {
+        flex: 1;
+        background: #1c1f28;
+        border: 1px solid #2a2f42;
+        border-radius: 12px;
+        padding: 12px 10px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 13px;
+        font-weight: 600;
+        color: #4e5570;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        transition: border-color 0.15s, color 0.15s, background 0.15s;
+        text-align: center;
+      }
+      .tab:hover {
+        border-color: #343a52;
+        color: #7a8099;
+      }
+      .tab-emoji {
+        font-size: 22px;
+        line-height: 1;
+      }
+      .tab-count {
+        font-size: 10.5px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        opacity: 0.7;
+      }
+
+      /* Tab ativa — Ouro */
+      .tab.active-ouro {
+        background: rgba(218, 174, 55, 0.08);
+        border-color: rgba(218, 174, 55, 0.4);
+        color: #daae37;
+      }
+      /* Tab ativa — Prata */
+      .tab.active-prata {
+        background: rgba(180, 188, 210, 0.08);
+        border-color: rgba(180, 188, 210, 0.4);
+        color: #b4bcd2;
+      }
+      /* Tab ativa — Bronze */
+      .tab.active-bronze {
+        background: rgba(186, 120, 70, 0.08);
+        border-color: rgba(186, 120, 70, 0.4);
+        color: #ba7846;
+      }
+
+      /* ── Painel de alunos ───────────────────────────────────── */
+      .panel {
+        display: none;
+        flex-direction: column;
+        gap: 10px;
+        animation: fadeIn 0.25s ease;
+      }
+      .panel.active {
+        display: flex;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to   { opacity: 1; transform: none; }
+      }
+
+      /* ── Card de aluno ──────────────────────────────────────── */
+      .aluno-card {
+        background: #1c1f28;
+        border: 1px solid #2a2f42;
+        border-radius: 14px;
+        padding: 16px 18px;
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        transition: border-color 0.15s, background 0.15s;
+      }
+      .aluno-card:hover {
+        background: #1e2130;
+        border-color: #343a52;
+      }
+
+      /* Medalha colorida por tier */
+      .aluno-card.ouro  { border-left: 3px solid rgba(218, 174, 55, 0.5); }
+      .aluno-card.prata { border-left: 3px solid rgba(180, 188, 210, 0.5); }
+      .aluno-card.bronze{ border-left: 3px solid rgba(186, 120, 70, 0.5); }
+
+      .pos-badge {
+        font-size: 11px;
+        font-weight: 700;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        letter-spacing: 0.01em;
+      }
+      .ouro  .pos-badge { background: rgba(218, 174, 55, 0.12); color: #daae37; }
+      .prata .pos-badge { background: rgba(180, 188, 210, 0.12); color: #b4bcd2; }
+      .bronze .pos-badge { background: rgba(186, 120, 70, 0.12); color: #ba7846; }
+
+      .aluno-info {
+        flex: 1;
+        min-width: 0;
+      }
+      .aluno-nome {
+        font-size: 14px;
+        font-weight: 600;
+        color: #cdd2e8;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-bottom: 3px;
+        text-transform: capitalize;
+      }
+      .aluno-formacao {
+        font-size: 11.5px;
+        color: #4e5570;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        font-weight: 500;
+      }
+
+      .aluno-stats {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 4px;
+        flex-shrink: 0;
+      }
+      .stat-nota {
+        font-size: 15px;
+        font-weight: 700;
+      }
+      .ouro  .stat-nota { color: #daae37; }
+      .prata .stat-nota { color: #b4bcd2; }
+      .bronze .stat-nota { color: #ba7846; }
+
+      .stat-pills {
+        display: flex;
+        gap: 5px;
+      }
+      .pill {
+        font-size: 10.5px;
+        font-weight: 500;
+        padding: 2px 7px;
+        border-radius: 20px;
+        background: #222636;
+        color: #7a8099;
+        white-space: nowrap;
+      }
+
+      /* ── Separador de formação ──────────────────────────────── */
+      .group-label {
+        font-size: 10.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #343a52;
+        padding: 4px 2px 2px;
+        margin-top: 6px;
+      }
+      .group-label:first-child {
+        margin-top: 0;
+      }
+
+      /* ── Rodapé ─────────────────────────────────────────────── */
+      .footer {
+        position: relative;
+        z-index: 1;
+        margin-top: 28px;
+        font-size: 11.5px;
+        color: #2e3450;
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-orbs">
+      <div class="orb orb1"></div>
+      <div class="orb orb2"></div>
+      <div class="orb orb3"></div>
+    </div>
+
+    <div class="wrapper">
+      <!-- Header -->
+      <div class="header">
+        <div class="logo-mark">GT</div>
+        <div class="logo-text">
+          <span class="logo-main">Geração Tech</span>
+          <span class="logo-sub">Ranking de Desempenho</span>
+        </div>
+      </div>
+
+      <!-- Hero -->
+      <div class="hero">
+        <span class="hero-trophy">🏆</span>
+        <h1>Top 50 — Melhores Alunos</h1>
+        <p>
+          Reconhecimento especial aos alunos que se destacaram em nota final,
+          presença e progresso ao longo do programa Geração Tech.
+        </p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button class="tab active-ouro" id="tab-ouro" onclick="showTab('ouro')">
+          <span class="tab-emoji">🥇</span>
+          <span>Ouro</span>
+          <span class="tab-count">10 alunos</span>
+        </button>
+        <button class="tab" id="tab-prata" onclick="showTab('prata')">
+          <span class="tab-emoji">🥈</span>
+          <span>Prata</span>
+          <span class="tab-count">15 alunos</span>
+        </button>
+        <button class="tab" id="tab-bronze" onclick="showTab('bronze')">
+          <span class="tab-emoji">🥉</span>
+          <span>Bronze</span>
+          <span class="tab-count">25 alunos</span>
+        </button>
+      </div>
+
+      <!-- Painel Ouro -->
+      <div class="panel active" id="panel-ouro">
+        <div class="group-label">Fullstack</div>
+        <div class="aluno-card ouro">
+          <div class="pos-badge">1</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Caio Ian Oliveira dos Santos</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">80% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card ouro">
+          <div class="pos-badge">2</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">David Antoniel de Paula Lima</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">98% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card ouro">
+          <div class="pos-badge">3</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Marcos Merencio da Silva</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">97% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">IA Generativa</div>
+        <div class="aluno-card ouro">
+          <div class="pos-badge">4</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Antonio Victor Vale de Brito</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card ouro">
+          <div class="pos-badge">5</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Daniel de Araujo Dantas</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card ouro">
+          <div class="pos-badge">6</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Felipe Stênio Carvalho Almeida</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">IA + Soft Skills</div>
+        <div class="aluno-card ouro">
+          <div class="pos-badge">7</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Francisco Isaias Oliveira de Sousa</div>
+            <div class="aluno-formacao">IA + Soft Skills</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">99% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card ouro">
+          <div class="pos-badge">8</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Matheus Ferreira Silva Rocha</div>
+            <div class="aluno-formacao">IA + Soft Skills</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">Presencial IA Generativa</div>
+        <div class="aluno-card ouro">
+          <div class="pos-badge">9</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Francisco das Chagas Teófilo da Silva</div>
+            <div class="aluno-formacao">Presencial IA Gen</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">Presencial IA + Soft Skills</div>
+        <div class="aluno-card ouro">
+          <div class="pos-badge">10</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Jonas Abner Silva Vieira</div>
+            <div class="aluno-formacao">Presencial IA Soft</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel Prata -->
+      <div class="panel" id="panel-prata">
+        <div class="group-label">Fullstack</div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">11</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Alicia Alexia Araújo Farias</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">70% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">12</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Ana Luisa Marques Galdino</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">73% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">13</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Anderson da Silva</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">79% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">14</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Bruno Gomes de Freitas</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">78% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">15</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Marcos Aurélio Ribeiro de Sousa</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">76% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">16</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Victor José Nascimento da Silva</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">77% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">IA Generativa</div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">17</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Antônio Pedro Cayky do Nascimento Pereira</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">92% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">18</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Flávia Reis de Almeida</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">19</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Gesivaldo Pessoa das Flores</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">20</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Samuel Holanda Fernandes</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">63% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">IA + Soft Skills</div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">21</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Iago Alexandre do Nascimento</div>
+            <div class="aluno-formacao">IA + Soft Skills</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">99% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">22</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">João Pedro Lira Rodrigues</div>
+            <div class="aluno-formacao">IA + Soft Skills</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">99% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">23</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">José Evangelista da Silva Filho</div>
+            <div class="aluno-formacao">IA + Soft Skills</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">99% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">Presencial IA Generativa</div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">24</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Leandro Morais da Frota</div>
+            <div class="aluno-formacao">Presencial IA Gen</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">Presencial IA + Soft Skills</div>
+        <div class="aluno-card prata">
+          <div class="pos-badge">25</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Paulo Henrique de Araújo Rodrigues</div>
+            <div class="aluno-formacao">Presencial IA Soft</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Painel Bronze -->
+      <div class="panel" id="panel-bronze">
+        <div class="group-label">Fullstack</div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">26</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Adrian de Sousa Magalhães</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">82% presença</span>
+              <span class="pill">48% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">27</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">André Almeida de Sousa Costa</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">55% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">28</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">André Felipe de Sá</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">89% presença</span>
+              <span class="pill">98% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">29</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">André Willamy dos Santos</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">96% presença</span>
+              <span class="pill">94% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">30</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Antonio Estevão de Oliveira Neto</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">99% presença</span>
+              <span class="pill">98% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">31</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Antônio Fernando Teixeira Braga</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">98% presença</span>
+              <span class="pill">92% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">32</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Claudia Maria de Souza Ferreira</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">61% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">33</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Edilson Antonio Bessa Botto</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">78% presença</span>
+              <span class="pill">30% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">34</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Mariana Amorim Silva</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">96% presença</span>
+              <span class="pill">98% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">35</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Moises Costa dos Santos Machado</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">93% presença</span>
+              <span class="pill">98% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">36</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Sintique Fragoso Alves</div>
+            <div class="aluno-formacao">Fullstack</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">78% presença</span>
+              <span class="pill">77% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">IA Generativa</div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">37</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Carolina Souza de Oliveira</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">86% presença</span>
+              <span class="pill">99% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">38</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Francisco Emanuel de Lima Sousa</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">90% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">39</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Jefferson Moreira Correia</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">86% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">46</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">João Luis Gomes Torres</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">9,5</span>
+            <div class="stat-pills">
+              <span class="pill">76% presença</span>
+              <span class="pill">9% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">47</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">José Wedison Sampaio</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">9,5</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">48</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Leo Anderson da Silva Silvestre</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">9,5</span>
+            <div class="stat-pills">
+              <span class="pill">98% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">49</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Luka de Sousa Castro</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">9,5</span>
+            <div class="stat-pills">
+              <span class="pill">92% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">50</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Jairo Fermon Ribeiro Filho</div>
+            <div class="aluno-formacao">IA Generativa</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">9,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">IA + Soft Skills</div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">40</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Jones de Oliveira Mendes</div>
+            <div class="aluno-formacao">IA + Soft Skills</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">88% presença</span>
+              <span class="pill">99% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">41</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Monick Hellen Nogueira Macena</div>
+            <div class="aluno-formacao">IA + Soft Skills</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">83% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">42</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Rodrigo Cunha de Cerqueira César</div>
+            <div class="aluno-formacao">IA + Soft Skills</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">99% progresso</span>
+            </div>
+          </div>
+        </div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">43</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Vitor Rifane Gurgel</div>
+            <div class="aluno-formacao">IA + Soft Skills</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">96% presença</span>
+              <span class="pill">98% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">Presencial IA Generativa</div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">44</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Maria Luciana Teixeira Lima</div>
+            <div class="aluno-formacao">Presencial IA Gen</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">100% presença</span>
+              <span class="pill">100% progresso</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="group-label">Presencial IA + Soft Skills</div>
+        <div class="aluno-card bronze">
+          <div class="pos-badge">45</div>
+          <div class="aluno-info">
+            <div class="aluno-nome">Julia dos Santos Catapan</div>
+            <div class="aluno-formacao">Presencial IA Soft</div>
+          </div>
+          <div class="aluno-stats">
+            <span class="stat-nota">10,0</span>
+            <div class="stat-pills">
+              <span class="pill">93% presença</span>
+              <span class="pill">93% progresso</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p class="footer">IEL Ceará — Programa Geração Tech © 2026</p>
+
+    <script>
+      function showTab(tier) {
+        // Esconde todos os painéis
+        document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+        // Remove classe ativa de todas as tabs
+        document.querySelectorAll('.tab').forEach(t => {
+          t.className = 'tab';
+        });
+        // Ativa painel e tab escolhidos
+        document.getElementById('panel-' + tier).classList.add('active');
+        document.getElementById('tab-' + tier).classList.add('active-' + tier);
+      }
+    </script>
+  </body>
+</html>
