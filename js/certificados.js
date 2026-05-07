@@ -247,41 +247,48 @@
             return;
           }
 
-          let added = 0,
-            updated = 0,
+          let updated = 0,
             skipped = 0;
           const existing = await getAll();
 
-          const normPct = (v) => {
-            const n = parseFloat(v);
-            if (isNaN(n)) return null;
-            return n > 0 && n <= 1 ? Math.round(n * 1000) / 10 : n;
-          };
-          if (match) {
-            // Preenche APENAS cpf, email e cidade — só se vier preenchido na planilha
-            // Não apaga nem altera nenhum outro campo
-            const patch = {};
-            const cpfVal = (m.cpf || "").toString().trim();
-            const emailVal = (m.email || "").toString().trim();
-            const cidadeVal = (m.cidade || "").toString().trim();
-            if (cpfVal) patch.cpf = cpfVal;
-            if (emailVal) patch.email = emailVal;
-            if (cidadeVal) patch.cidade = cidadeVal;
+          for (const raw of rows) {
+            const m = mapRow(raw);
+            const nome = (m.nome || "").toString().trim();
+            if (!nome) {
+              skipped++;
+              continue;
+            }
 
-            if (Object.keys(patch).length > 0) {
-              await patchRow(match.id, patch);
-              Object.assign(match, patch);
-              updated++;
+            const match = existing.find(
+              (e) => normalizar(e.nome) === normalizar(nome),
+            );
+
+            if (match) {
+              // Preenche APENAS cpf, email e cidade — só se vier preenchido na planilha
+              // Não apaga nem altera nenhum outro campo
+              const patch = {};
+              const cpfVal = (m.cpf || "").toString().trim();
+              const emailVal = (m.email || "").toString().trim();
+              const cidadeVal = (m.cidade || "").toString().trim();
+              if (cpfVal) patch.cpf = cpfVal;
+              if (emailVal) patch.email = emailVal;
+              if (cidadeVal) patch.cidade = cidadeVal;
+
+              if (Object.keys(patch).length > 0) {
+                await patchRow(match.id, patch);
+                Object.assign(match, patch);
+                updated++;
+              } else {
+                skipped++;
+              }
             } else {
+              // Nome não encontrado na tabela — ignora, não cria novo aluno
               skipped++;
             }
-          } else {
-            // Nome não encontrado na tabela — ignora, não cria novo aluno
-            skipped++;
           }
 
           toast(
-            `${added} novo(s), ${updated} atualizado(s)${skipped ? `, ${skipped} ignorado(s)` : ""}.`,
+            `✅ ${updated} atualizado(s)${skipped ? `, ${skipped} ignorado(s)` : ""}.`,
             "success",
           );
           resolve();
