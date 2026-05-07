@@ -323,6 +323,81 @@
         margin-top: 0;
       }
 
+      /* ── Tabela de distribuição ─────────────────────────────── */
+      .dist-box {
+        background: #1c1f28;
+        border: 1px solid #2a2f42;
+        border-radius: 16px;
+        padding: 22px 22px 18px;
+        margin-bottom: 20px;
+      }
+      .dist-title {
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #daae37;
+        margin-bottom: 6px;
+      }
+      .dist-subtitle {
+        font-size: 12px;
+        color: #4e5570;
+        margin-bottom: 16px;
+        line-height: 1.5;
+      }
+      .dist-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12.5px;
+      }
+      .dist-table thead tr {
+        border-bottom: 1px solid #2a2f42;
+      }
+      .dist-table th {
+        padding: 7px 10px;
+        text-align: left;
+        font-size: 10.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: #4e5570;
+        white-space: nowrap;
+      }
+      .dist-table th:not(:first-child) { text-align: center; }
+      .dist-table tbody tr {
+        border-bottom: 1px solid #222636;
+        transition: background 0.12s;
+      }
+      .dist-table tbody tr:last-child { border-bottom: none; }
+      .dist-table tbody tr:hover { background: #222636; }
+      .dist-table td {
+        padding: 9px 10px;
+        color: #b8bdd0;
+      }
+      .dist-table td:not(:first-child) { text-align: center; }
+      .dist-table td.formacao-cell {
+        font-weight: 500;
+        color: #cdd2e8;
+      }
+      .dist-table tfoot tr {
+        border-top: 1px solid #2a2f42;
+      }
+      .dist-table tfoot td {
+        padding: 9px 10px;
+        font-weight: 700;
+        color: #cdd2e8;
+      }
+      .dist-table tfoot td:not(:first-child) { text-align: center; }
+      .cell-ouro   { color: #daae37; font-weight: 600; }
+      .cell-prata  { color: #b4bcd2; font-weight: 600; }
+      .cell-bronze { color: #ba7846; font-weight: 600; }
+      .cell-total  { color: #cdd2e8; font-weight: 700; }
+
+      /* highlight da coluna ativa */
+      .dist-table .col-ouro   { background: rgba(218,174,55,0.04); }
+      .dist-table .col-prata  { background: rgba(180,188,210,0.04); }
+      .dist-table .col-bronze { background: rgba(186,120,70,0.04); }
+
       /* ── Rodapé ─────────────────────────────────────────────── */
       .footer {
         position: relative;
@@ -331,6 +406,96 @@
         font-size: 11.5px;
         color: #2e3450;
         text-align: center;
+      }
+
+      /* ── Responsividade ─────────────────────────────────────── */
+
+      /* Tablet (≤ 600px) */
+      @media (max-width: 600px) {
+        body {
+          padding: 16px 12px 40px;
+        }
+
+        /* Header */
+        .header {
+          margin-bottom: 20px;
+        }
+        .logo-mark {
+          width: 44px;
+          height: 44px;
+          font-size: 15px;
+          border-radius: 11px;
+        }
+        .logo-main { font-size: 17px; }
+
+        /* Hero */
+        .hero {
+          padding: 24px 20px 20px;
+          margin-bottom: 16px;
+          border-radius: 16px;
+        }
+        .hero-trophy { font-size: 40px; margin-bottom: 10px; }
+        .hero h1    { font-size: 18px; }
+        .hero p     { font-size: 12.5px; }
+
+        /* Tabs */
+        .tabs { gap: 6px; margin-bottom: 14px; }
+        .tab  { padding: 10px 6px; border-radius: 10px; font-size: 12px; }
+        .tab-emoji { font-size: 18px; }
+        .tab-count { font-size: 9.5px; }
+
+        /* Tabela de distribuição — scroll horizontal */
+        .dist-box {
+          padding: 16px 14px 14px;
+          border-radius: 12px;
+          overflow-x: auto;
+          -webkit-overflow-scrolling: touch;
+        }
+        .dist-table { min-width: 400px; font-size: 11.5px; }
+        .dist-table th { padding: 6px 8px; font-size: 9.5px; }
+        .dist-table td { padding: 8px 8px; }
+        .dist-subtitle { font-size: 11px; }
+
+        /* Cards de aluno */
+        .aluno-card {
+          padding: 13px 14px;
+          gap: 10px;
+          border-radius: 12px;
+        }
+        .pos-badge {
+          width: 28px;
+          height: 28px;
+          font-size: 10px;
+          border-radius: 7px;
+          flex-shrink: 0;
+        }
+        .aluno-nome     { font-size: 13px; }
+        .aluno-formacao { font-size: 10.5px; }
+        .stat-nota      { font-size: 14px; }
+        .pill           { font-size: 9.5px; padding: 2px 6px; }
+        .stat-pills     { gap: 4px; }
+        .group-label    { font-size: 9.5px; }
+      }
+
+      /* Mobile pequeno (≤ 380px) */
+      @media (max-width: 380px) {
+        body { padding: 12px 10px 36px; }
+
+        .logo-mark  { width: 38px; height: 38px; font-size: 13px; }
+        .logo-main  { font-size: 15px; }
+        .logo-sub   { font-size: 9px; }
+
+        .hero { padding: 18px 14px 16px; }
+        .hero-trophy { font-size: 34px; }
+        .hero h1     { font-size: 16px; }
+        .hero p      { font-size: 11.5px; }
+
+        /* Pills empilham em tela muito pequena */
+        .aluno-stats { gap: 3px; }
+        .stat-pills  { flex-direction: column; align-items: flex-end; gap: 3px; }
+        .pill        { font-size: 9px; padding: 2px 5px; }
+
+        .aluno-nome { font-size: 12.5px; }
       }
     </style>
   </head>
@@ -378,6 +543,69 @@
           <span>Bronze</span>
           <span class="tab-count">25 alunos</span>
         </button>
+      </div>
+
+      <!-- Tabela de distribuição -->
+      <div class="dist-box">
+        <div class="dist-title">🏅 Top 50 — Melhores Alunos</div>
+        <div class="dist-subtitle">Distribuição proporcional entre as formações. Critérios: nota média → presença → progresso.</div>
+        <table class="dist-table">
+          <thead>
+            <tr>
+              <th>Formação</th>
+              <th>🥇 Ouro (Top 10)</th>
+              <th>🥈 Prata (11–25)</th>
+              <th>🥉 Bronze (26–50)</th>
+              <th>Total no Top 50</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="formacao-cell">Fullstack</td>
+              <td class="col-ouro cell-ouro">🥇 3</td>
+              <td class="col-prata cell-prata">🥈 6</td>
+              <td class="col-bronze cell-bronze">🥉 11</td>
+              <td class="cell-total">20</td>
+            </tr>
+            <tr>
+              <td class="formacao-cell">IA Generativa</td>
+              <td class="col-ouro cell-ouro">🥇 3</td>
+              <td class="col-prata cell-prata">🥈 4</td>
+              <td class="col-bronze cell-bronze">🥉 8</td>
+              <td class="cell-total">15</td>
+            </tr>
+            <tr>
+              <td class="formacao-cell">IA + Soft Skills</td>
+              <td class="col-ouro cell-ouro">🥇 2</td>
+              <td class="col-prata cell-prata">🥈 3</td>
+              <td class="col-bronze cell-bronze">🥉 4</td>
+              <td class="cell-total">9</td>
+            </tr>
+            <tr>
+              <td class="formacao-cell">Presencial IA Gen</td>
+              <td class="col-ouro cell-ouro">🥇 1</td>
+              <td class="col-prata cell-prata">🥈 1</td>
+              <td class="col-bronze cell-bronze">🥉 1</td>
+              <td class="cell-total">3</td>
+            </tr>
+            <tr>
+              <td class="formacao-cell">Presencial IA Soft</td>
+              <td class="col-ouro cell-ouro">🥇 1</td>
+              <td class="col-prata cell-prata">🥈 1</td>
+              <td class="col-bronze cell-bronze">🥉 1</td>
+              <td class="cell-total">3</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td>Total</td>
+              <td class="col-ouro">10</td>
+              <td class="col-prata">15</td>
+              <td class="col-bronze">25</td>
+              <td>50</td>
+            </tr>
+          </tfoot>
+        </table>
       </div>
 
       <!-- Painel Ouro -->
