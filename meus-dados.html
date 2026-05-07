@@ -1,0 +1,824 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Geração Tech — Confirmar Dados para Certificado</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ── Reset & base ───────────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html { font-size: 15px; }
+      body {
+        font-family: "Inter", system-ui, sans-serif;
+        background: #16181f;
+        color: #b8bdd0;
+        min-height: 100dvh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px 48px;
+      }
+
+      /* ── Orbs ───────────────────────────────────────────────── */
+      .bg-orbs { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+      .orb { position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.12; }
+      .orb1 { width: 420px; height: 420px; background: #3768db; top: -120px; left: -100px; }
+      .orb2 { width: 340px; height: 340px; background: #7b4fff; bottom: -80px; right: -60px; }
+      .orb3 { width: 220px; height: 220px; background: #26b667; top: 50%; left: 60%; }
+
+      /* ── Card ───────────────────────────────────────────────── */
+      .card {
+        position: relative;
+        z-index: 1;
+        background: #1c1f28;
+        border: 1px solid #2a2f42;
+        border-radius: 20px;
+        padding: 44px 40px 40px;
+        width: 100%;
+        max-width: 520px;
+        box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+      }
+
+      /* ── Logo ───────────────────────────────────────────────── */
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 32px;
+      }
+      .logo-mark {
+        width: 44px; height: 44px;
+        background: linear-gradient(135deg, #3768db, #7b4fff);
+        border-radius: 11px;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 15px; font-weight: 800; color: #fff;
+        flex-shrink: 0;
+      }
+      .logo-text { display: flex; flex-direction: column; gap: 2px; }
+      .logo-main { font-size: 17px; font-weight: 700; color: #cdd2e8; line-height: 1.1; }
+      .logo-sub  { font-size: 10px; color: #4e5570; letter-spacing: 0.09em; text-transform: uppercase; font-weight: 500; }
+
+      /* ── Tela de busca ──────────────────────────────────────── */
+      #screenBusca { display: block; }
+      #screenDados { display: none; }
+      #screenNaoEncontrado { display: none; }
+
+      .screen-icon {
+        font-size: 42px;
+        display: block;
+        margin-bottom: 14px;
+        line-height: 1;
+      }
+      .screen-title {
+        font-size: 20px;
+        font-weight: 800;
+        color: #cdd2e8;
+        margin-bottom: 8px;
+        letter-spacing: -0.3px;
+      }
+      .screen-sub {
+        font-size: 13px;
+        color: #4e5570;
+        line-height: 1.6;
+        margin-bottom: 28px;
+      }
+
+      /* ── Input CPF ──────────────────────────────────────────── */
+      .input-wrap { position: relative; margin-bottom: 16px; }
+      .input-wrap input {
+        width: 100%;
+        background: #222636;
+        border: 1.5px solid #2a2f42;
+        border-radius: 12px;
+        padding: 14px 16px;
+        font-family: "Inter", sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        color: #cdd2e8;
+        letter-spacing: 0.08em;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .input-wrap input::placeholder { color: #363d57; font-weight: 400; letter-spacing: 0.03em; }
+      .input-wrap input:focus {
+        border-color: #3768db;
+        box-shadow: 0 0 0 3px rgba(55,104,219,0.15);
+      }
+      .input-wrap input.error {
+        border-color: #e05260;
+        box-shadow: 0 0 0 3px rgba(224,82,96,0.12);
+      }
+
+      /* ── Botão principal ────────────────────────────────────── */
+      .btn-primary {
+        width: 100%;
+        background: linear-gradient(135deg, #3768db, #7b4fff);
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-family: "Inter", sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+        cursor: pointer;
+        transition: opacity 0.15s, transform 0.1s;
+        letter-spacing: 0.02em;
+      }
+      .btn-primary:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+      .btn-primary:active { transform: translateY(0); }
+      .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+      /* ── Spinner ────────────────────────────────────────────── */
+      .spinner {
+        display: inline-block;
+        width: 16px; height: 16px;
+        border: 2px solid rgba(255,255,255,0.3);
+        border-top-color: #fff;
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+        vertical-align: middle;
+        margin-right: 8px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+
+      /* ── Divisor ────────────────────────────────────────────── */
+      .divider {
+        border: none;
+        border-top: 1px solid #2a2f42;
+        margin: 28px 0;
+      }
+
+      /* ── Seção de dados ─────────────────────────────────────── */
+      .section-label {
+        font-size: 10px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #4e5570;
+        margin-bottom: 14px;
+      }
+
+      /* Campos editáveis */
+      .field-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+      .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .field label {
+        font-size: 10.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: #4e5570;
+      }
+      .field input {
+        background: #222636;
+        border: 1.5px solid #2a2f42;
+        border-radius: 9px;
+        padding: 10px 12px;
+        font-family: "Inter", sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        color: #cdd2e8;
+        outline: none;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        width: 100%;
+      }
+      .field input:focus {
+        border-color: #3768db;
+        box-shadow: 0 0 0 3px rgba(55,104,219,0.12);
+      }
+      .field input.changed {
+        border-color: #26b667;
+        box-shadow: 0 0 0 3px rgba(38,182,103,0.12);
+      }
+
+      /* Campos somente leitura */
+      .field-readonly {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .field-readonly label {
+        font-size: 10.5px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.07em;
+        color: #4e5570;
+      }
+      .field-readonly .value {
+        background: #191c24;
+        border: 1.5px solid #222636;
+        border-radius: 9px;
+        padding: 10px 12px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #7a8099;
+        cursor: default;
+        user-select: text;
+      }
+
+      /* ── Badge de certificado ───────────────────────────────── */
+      .cert-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 8px 14px;
+        border-radius: 30px;
+        font-size: 12.5px;
+        font-weight: 700;
+        margin-top: 4px;
+      }
+      .cert-conclusao   { background: rgba(38,182,103,0.12); color: #26b667; border: 1px solid rgba(38,182,103,0.25); }
+      .cert-participacao { background: rgba(55,104,219,0.12); color: #5b8dee; border: 1px solid rgba(55,104,219,0.25); }
+      .cert-vinculacao  { background: rgba(123,79,255,0.12); color: #a07cff; border: 1px solid rgba(123,79,255,0.25); }
+      .cert-outro       { background: rgba(74,83,110,0.2); color: #7a8099; border: 1px solid #2a2f42; }
+
+      /* ── Badge medalha ──────────────────────────────────────── */
+      .medal-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 4px;
+      }
+      .medal-ouro   { background: rgba(218,174,55,0.1); color: #daae37; border: 1px solid rgba(218,174,55,0.25); }
+      .medal-prata  { background: rgba(180,188,210,0.1); color: #b4bcd2; border: 1px solid rgba(180,188,210,0.25); }
+      .medal-bronze { background: rgba(186,120,70,0.1); color: #ba7846; border: 1px solid rgba(186,120,70,0.25); }
+
+      /* ── Notas ──────────────────────────────────────────────── */
+      .notas-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .nota-box {
+        background: #191c24;
+        border: 1px solid #222636;
+        border-radius: 10px;
+        padding: 12px 10px;
+        text-align: center;
+      }
+      .nota-box .nota-label {
+        font-size: 9.5px;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: #4e5570;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      .nota-box .nota-val {
+        font-size: 20px;
+        font-weight: 800;
+        color: #cdd2e8;
+        line-height: 1;
+      }
+      .nota-box .nota-val.verde { color: #26b667; }
+      .nota-box .nota-val.azul  { color: #5b8dee; }
+      .nota-box .nota-val small {
+        font-size: 11px;
+        font-weight: 500;
+        color: #4e5570;
+        margin-left: 2px;
+      }
+
+      /* ── Info box ───────────────────────────────────────────── */
+      .info-box {
+        background: rgba(55,104,219,0.06);
+        border: 1px solid rgba(55,104,219,0.18);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 12px;
+        color: #5b8dee;
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+      .info-box strong { color: #7aaeff; }
+
+      /* ── Aviso de alterações ────────────────────────────────── */
+      .changes-box {
+        display: none;
+        background: rgba(38,182,103,0.06);
+        border: 1px solid rgba(38,182,103,0.2);
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 12px;
+        color: #26b667;
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+      .changes-box.visible { display: block; }
+
+      /* ── Botões de ação ─────────────────────────────────────── */
+      .btn-save {
+        width: 100%;
+        background: linear-gradient(135deg, #26b667, #1a9e58);
+        border: none;
+        border-radius: 12px;
+        padding: 14px;
+        font-family: "Inter", sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+        cursor: pointer;
+        transition: opacity 0.15s, transform 0.1s;
+        margin-bottom: 10px;
+        display: none;
+      }
+      .btn-save.visible { display: block; }
+      .btn-save:hover:not(:disabled) { opacity: 0.9; transform: translateY(-1px); }
+      .btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
+
+      .btn-secondary {
+        width: 100%;
+        background: transparent;
+        border: 1px solid #2a2f42;
+        border-radius: 12px;
+        padding: 13px;
+        font-family: "Inter", sans-serif;
+        font-size: 13.5px;
+        font-weight: 600;
+        color: #4e5570;
+        cursor: pointer;
+        transition: border-color 0.15s, color 0.15s;
+      }
+      .btn-secondary:hover { border-color: #343a52; color: #7a8099; }
+
+      /* ── Toast ──────────────────────────────────────────────── */
+      .toast {
+        position: fixed;
+        bottom: 28px;
+        left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: #1c1f28;
+        border: 1px solid #2a2f42;
+        border-radius: 12px;
+        padding: 12px 20px;
+        font-size: 13px;
+        font-weight: 500;
+        color: #cdd2e8;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        opacity: 0;
+        transition: opacity 0.2s, transform 0.2s;
+        z-index: 9999;
+        white-space: nowrap;
+        pointer-events: none;
+      }
+      .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+      .toast.success { border-color: rgba(38,182,103,0.4); color: #26b667; }
+      .toast.error   { border-color: rgba(224,82,96,0.4);  color: #e05260; }
+
+      /* ── Não encontrado ─────────────────────────────────────── */
+      .nao-encontrado-icon { font-size: 40px; margin-bottom: 12px; display: block; }
+
+      /* ── Footer ─────────────────────────────────────────────── */
+      .footer {
+        position: relative; z-index: 1;
+        margin-top: 20px;
+        font-size: 11.5px;
+        color: #2e3450;
+        text-align: center;
+      }
+
+      /* ── Responsivo ─────────────────────────────────────────── */
+      @media (max-width: 560px) {
+        .card { padding: 32px 20px 28px; }
+        .field-row { grid-template-columns: 1fr; }
+        .notas-grid { grid-template-columns: 1fr 1fr; }
+      }
+      @media (max-width: 380px) {
+        .card { padding: 24px 16px 22px; border-radius: 16px; }
+        .screen-title { font-size: 18px; }
+        .notas-grid { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-orbs">
+      <div class="orb orb1"></div>
+      <div class="orb orb2"></div>
+      <div class="orb orb3"></div>
+    </div>
+
+    <div class="card">
+      <!-- Logo -->
+      <div class="logo">
+        <div class="logo-mark">GT</div>
+        <div class="logo-text">
+          <span class="logo-main">Geração Tech</span>
+          <span class="logo-sub">Confirmação de Dados</span>
+        </div>
+      </div>
+
+      <!-- ── Tela 1: Busca por CPF ── -->
+      <div id="screenBusca">
+        <span class="screen-icon">📋</span>
+        <div class="screen-title">Confirme seus dados</div>
+        <p class="screen-sub">
+          Digite seu CPF para acessar suas informações e verificar se
+          estão corretas antes do envio do certificado.
+        </p>
+        <div class="input-wrap">
+          <input
+            type="text"
+            id="inputCpf"
+            placeholder="000.000.000-00"
+            maxlength="14"
+            inputmode="numeric"
+            autocomplete="off"
+          />
+        </div>
+        <button class="btn-primary" id="btnBuscar">
+          Buscar meus dados
+        </button>
+      </div>
+
+      <!-- ── Tela 2: Dados encontrados ── -->
+      <div id="screenDados">
+        <span class="screen-icon">👋</span>
+        <div class="screen-title" id="nomeBoasVindas">Olá!</div>
+        <p class="screen-sub">
+          Confira seus dados abaixo. Os campos em branco ou incorretos podem ser editados diretamente aqui.
+        </p>
+
+        <div class="info-box">
+          ✏️ <strong>Campos editáveis:</strong> Nome, e-mail e cidade.<br>
+          🔒 <strong>Campos bloqueados:</strong> Notas, frequência, curso e certificado são preenchidos pelo sistema e não podem ser alterados aqui.
+        </div>
+
+        <!-- Dados pessoais editáveis -->
+        <div class="section-label">Dados Pessoais</div>
+        <div class="field-group">
+          <div class="field">
+            <label>Nome Completo</label>
+            <input type="text" id="fNome" placeholder="Seu nome completo" />
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label>CPF</label>
+              <input type="text" id="fCpf" disabled style="opacity:0.5;cursor:not-allowed" />
+            </div>
+            <div class="field">
+              <label>Cidade</label>
+              <input type="text" id="fCidade" placeholder="Sua cidade" />
+            </div>
+          </div>
+          <div class="field">
+            <label>E-mail</label>
+            <input type="email" id="fEmail" placeholder="seuemail@exemplo.com" />
+          </div>
+        </div>
+
+        <hr class="divider" style="margin:0 0 20px" />
+
+        <!-- Curso (somente leitura) -->
+        <div class="section-label">Curso</div>
+        <div class="field-group">
+          <div class="field-row">
+            <div class="field-readonly">
+              <label>Formação</label>
+              <div class="value" id="fFormacao">—</div>
+            </div>
+            <div class="field-readonly">
+              <label>Modalidade</label>
+              <div class="value" id="fModalidade">—</div>
+            </div>
+          </div>
+        </div>
+
+        <hr class="divider" style="margin:0 0 20px" />
+
+        <!-- Notas (somente leitura) -->
+        <div class="section-label">Desempenho</div>
+        <div class="notas-grid">
+          <div class="nota-box">
+            <div class="nota-label">Nota Projeto</div>
+            <div class="nota-val verde" id="fNotaFinal">—</div>
+          </div>
+          <div class="nota-box">
+            <div class="nota-label">Nota Prova</div>
+            <div class="nota-val azul" id="fNotaProva">—</div>
+          </div>
+          <div class="nota-box">
+            <div class="nota-label">Frequência</div>
+            <div class="nota-val" id="fFrequencia">—</div>
+          </div>
+        </div>
+
+        <hr class="divider" style="margin:0 0 20px" />
+
+        <!-- Certificado (somente leitura) -->
+        <div class="section-label">Certificado</div>
+        <div style="margin-bottom:20px">
+          <div id="fCertificado"></div>
+          <div id="fMedalha" style="margin-top:8px"></div>
+        </div>
+
+        <hr class="divider" style="margin:0 0 20px" />
+
+        <!-- Aviso de alterações -->
+        <div class="changes-box" id="changesBox">
+          ✏️ Você alterou alguns campos. Clique em <strong>Salvar alterações</strong> para confirmar.
+        </div>
+
+        <!-- Botões -->
+        <button class="btn-save" id="btnSalvar">✓ Salvar alterações</button>
+        <button class="btn-secondary" id="btnVoltar">← Consultar outro CPF</button>
+      </div>
+
+      <!-- ── Tela 3: CPF não encontrado ── -->
+      <div id="screenNaoEncontrado">
+        <span class="nao-encontrado-icon">🔍</span>
+        <div class="screen-title">CPF não encontrado</div>
+        <p class="screen-sub">
+          Não encontramos nenhum aluno com o CPF <strong id="cpfNaoEncontrado" style="color:#cdd2e8"></strong>
+          na base de dados.<br><br>
+          Verifique se o CPF está correto ou entre em contato com a equipe Geração Tech.
+        </p>
+        <button class="btn-secondary" id="btnVoltarNaoEncontrado">← Tentar novamente</button>
+      </div>
+    </div>
+
+    <p class="footer">IEL Ceará — Programa Geração Tech</p>
+    <div class="toast" id="toast"></div>
+
+    <!-- Supabase config — mesmo padrão do resto do sistema -->
+    <script src="js/config.js"></script>
+    <script>
+    (function () {
+      "use strict";
+
+      // ── Edge Function (segura — não expõe chaves nem dados de outros alunos) ──
+      function getFunctionUrl() {
+        const base = (window.ENV?.SUPABASE_URL || "").replace(/\/+$/, "");
+        return base + "/functions/v1/get-aluno-dados";
+      }
+
+      async function buscarPorCpf(cpf) {
+        const url = getFunctionUrl() + "?cpf=" + encodeURIComponent(cpf);
+        const res = await fetch(url);
+        if (res.status === 404) return null;
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "Erro ao consultar. Tente novamente.");
+        }
+        return await res.json();
+      }
+
+      async function salvarDados(cpf, fields) {
+        const res = await fetch(getFunctionUrl(), {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ cpf, fields }),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "Erro ao salvar. Tente novamente.");
+        }
+      }
+
+      // ── Utilitários ───────────────────────────────────────────
+      function formatarCpf(v) {
+        const n = v.replace(/\D/g, "").slice(0, 11);
+        if (n.length <= 3) return n;
+        if (n.length <= 6) return n.slice(0,3) + "." + n.slice(3);
+        if (n.length <= 9) return n.slice(0,3) + "." + n.slice(3,6) + "." + n.slice(6);
+        return n.slice(0,3) + "." + n.slice(3,6) + "." + n.slice(6,9) + "-" + n.slice(9);
+      }
+
+      function showToast(msg, type = "info") {
+        const el = document.getElementById("toast");
+        el.textContent = msg;
+        el.className = "toast show " + type;
+        clearTimeout(el._t);
+        el._t = setTimeout(() => { el.className = "toast"; }, 3200);
+      }
+
+      function showScreen(name) {
+        document.getElementById("screenBusca").style.display        = name === "busca"        ? "block" : "none";
+        document.getElementById("screenDados").style.display        = name === "dados"        ? "block" : "none";
+        document.getElementById("screenNaoEncontrado").style.display = name === "naoEncontrado" ? "block" : "none";
+      }
+
+      function certClass(tipo) {
+        if (!tipo) return "cert-outro";
+        if (tipo.includes("Conclusão"))    return "cert-conclusao";
+        if (tipo.includes("Participação")) return "cert-participacao";
+        if (tipo.includes("Vinculação"))   return "cert-vinculacao";
+        return "cert-outro";
+      }
+
+      function certIcon(tipo) {
+        if (!tipo) return "📄";
+        if (tipo.includes("Conclusão"))    return "🎓";
+        if (tipo.includes("Participação")) return "📜";
+        if (tipo.includes("Vinculação"))   return "🔗";
+        return "📄";
+      }
+
+      // ── Estado ────────────────────────────────────────────────
+      let _aluno = null;
+      let _alterado = false;
+
+      // ── Preencher tela de dados ───────────────────────────────
+      function preencherDados(aluno) {
+        _aluno = aluno;
+        _alterado = false;
+
+        const primeiroNome = (aluno.nome || "").split(" ")[0];
+        document.getElementById("nomeBoasVindas").textContent =
+          "Olá, " + (primeiroNome || "aluno") + "! 👋";
+
+        // Editáveis
+        document.getElementById("fNome").value   = aluno.nome   || "";
+        document.getElementById("fCpf").value    = aluno.cpf    || "";
+        document.getElementById("fCidade").value = aluno.cidade || "";
+        document.getElementById("fEmail").value  = aluno.email  || "";
+
+        // Somente leitura
+        document.getElementById("fFormacao").textContent   = aluno.formacao   || "—";
+        document.getElementById("fModalidade").textContent = aluno.modalidade || "—";
+
+        // Notas
+        const nf = aluno.nota_final;
+        const np = aluno.nota_prova;
+        const fr = aluno.frequencia;
+        document.getElementById("fNotaFinal").innerHTML =
+          nf != null ? nf + '<small>/10</small>' : '—';
+        document.getElementById("fNotaProva").innerHTML =
+          np != null ? np + '<small>/10</small>' : '—';
+        document.getElementById("fFrequencia").innerHTML =
+          fr != null ? fr + '<small>%</small>' : '—';
+
+        // Certificado
+        const cert = aluno.certificado || "";
+        document.getElementById("fCertificado").innerHTML = cert
+          ? `<span class="cert-badge ${certClass(cert)}">${certIcon(cert)} ${cert}</span>`
+          : '<span style="color:#4e5570;font-size:13px">—</span>';
+
+        // Medalha
+        const med = (aluno.medalha || "").toLowerCase();
+        const medalIcons = { ouro: "🥇", prata: "🥈", bronze: "🥉" };
+        document.getElementById("fMedalha").innerHTML = med && medalIcons[med]
+          ? `<span class="medal-badge medal-${med}">${medalIcons[med]} Medalha ${med.charAt(0).toUpperCase() + med.slice(1)}</span>`
+          : "";
+
+        // Reset visual
+        document.getElementById("changesBox").classList.remove("visible");
+        document.getElementById("btnSalvar").classList.remove("visible");
+        ["fNome","fCidade","fEmail"].forEach(id =>
+          document.getElementById(id).classList.remove("changed")
+        );
+
+        // Listeners de mudança
+        ["fNome","fCidade","fEmail"].forEach(id => {
+          const el = document.getElementById(id);
+          el.oninput = () => marcarAlterado();
+        });
+      }
+
+      function marcarAlterado() {
+        // Compara com valores originais
+        const nomeAtual   = document.getElementById("fNome").value.trim();
+        const cidadeAtual = document.getElementById("fCidade").value.trim();
+        const emailAtual  = document.getElementById("fEmail").value.trim();
+
+        const mudou =
+          nomeAtual   !== (_aluno.nome   || "").trim() ||
+          cidadeAtual !== (_aluno.cidade || "").trim() ||
+          emailAtual  !== (_aluno.email  || "").trim();
+
+        // Destaca campos alterados individualmente
+        const highlight = (id, original) => {
+          const el = document.getElementById(id);
+          const val = el.value.trim();
+          if (val !== (original || "").trim() && val !== "") {
+            el.classList.add("changed");
+          } else {
+            el.classList.remove("changed");
+          }
+        };
+        highlight("fNome",   _aluno.nome);
+        highlight("fCidade", _aluno.cidade);
+        highlight("fEmail",  _aluno.email);
+
+        _alterado = mudou;
+        document.getElementById("changesBox").classList.toggle("visible", mudou);
+        document.getElementById("btnSalvar").classList.toggle("visible", mudou);
+      }
+
+      // ── Eventos ───────────────────────────────────────────────
+      // Máscara CPF
+      document.getElementById("inputCpf").addEventListener("input", function () {
+        this.value = formatarCpf(this.value);
+        this.classList.remove("error");
+      });
+
+      document.getElementById("inputCpf").addEventListener("keydown", function (e) {
+        if (e.key === "Enter") document.getElementById("btnBuscar").click();
+      });
+
+      // Buscar
+      document.getElementById("btnBuscar").addEventListener("click", async () => {
+        const cpf = document.getElementById("inputCpf").value.trim();
+        const digitos = cpf.replace(/\D/g, "");
+
+        if (digitos.length !== 11) {
+          document.getElementById("inputCpf").classList.add("error");
+          showToast("Digite um CPF válido com 11 dígitos.", "error");
+          return;
+        }
+
+        const btn = document.getElementById("btnBuscar");
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Buscando...';
+
+        try {
+          const aluno = await buscarPorCpf(cpf);
+          if (aluno) {
+            preencherDados(aluno);
+            showScreen("dados");
+          } else {
+            document.getElementById("cpfNaoEncontrado").textContent = cpf;
+            showScreen("naoEncontrado");
+          }
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = "Buscar meus dados";
+        }
+      });
+
+      // Salvar
+      document.getElementById("btnSalvar").addEventListener("click", async () => {
+        if (!_aluno) return;
+
+        const nome   = document.getElementById("fNome").value.trim();
+        const cidade = document.getElementById("fCidade").value.trim();
+        const email  = document.getElementById("fEmail").value.trim();
+
+        if (!nome) { showToast("O nome não pode ficar vazio.", "error"); return; }
+
+        const btn = document.getElementById("btnSalvar");
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner"></span>Salvando...';
+
+        try {
+          const patch = {};
+          if (nome   !== (_aluno.nome   || "").trim()) patch.nome   = nome;
+          if (cidade !== (_aluno.cidade || "").trim()) patch.cidade = cidade || null;
+          if (email  !== (_aluno.email  || "").trim()) patch.email  = email  || null;
+
+          await salvarDados(_aluno.cpf, patch);
+
+          // Atualiza cache local
+          Object.assign(_aluno, patch);
+
+          // Reseta visual
+          _alterado = false;
+          document.getElementById("changesBox").classList.remove("visible");
+          document.getElementById("btnSalvar").classList.remove("visible");
+          ["fNome","fCidade","fEmail"].forEach(id =>
+            document.getElementById(id).classList.remove("changed")
+          );
+
+          showToast("✅ Dados salvos com sucesso!", "success");
+        } catch (err) {
+          showToast(err.message, "error");
+        } finally {
+          btn.disabled = false;
+          btn.innerHTML = "✓ Salvar alterações";
+        }
+      });
+
+      // Voltar
+      document.getElementById("btnVoltar").addEventListener("click", () => {
+        _aluno = null;
+        _alterado = false;
+        document.getElementById("inputCpf").value = "";
+        showScreen("busca");
+      });
+      document.getElementById("btnVoltarNaoEncontrado").addEventListener("click", () => {
+        document.getElementById("inputCpf").value = "";
+        showScreen("busca");
+      });
+
+    })();
+    </script>
+  </body>
+</html>
