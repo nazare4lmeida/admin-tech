@@ -465,6 +465,16 @@
     IO.openExportModal(_activeFormation);
     closeSidebar();
   });
+  // ═══ ADICIONE A PARTIR DAQUI: ═══
+  document.getElementById("btnDuplicados")?.addEventListener("click", () => {
+    Duplicados.open();
+    closeSidebar();
+  });
+  // Atualiza a tabela ativa quando um aluno é excluído pelo modal de duplicados
+  document.addEventListener("gt:studentDeleted", (e) => {
+    if (e.detail?.fid === _activeFormation) Table.render(_activeFormation);
+  });
+  // ═══ FIM DA ADIÇÃO ═══
 
   // ============================================================
   // SEARCH & FILTER

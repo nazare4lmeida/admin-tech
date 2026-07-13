@@ -559,6 +559,7 @@
           </div>
           <div class="rpt-header-btns">
             <button class="rpt-edit-btn" id="btnExportRptHtml">📄 HTML</button>
+            <button class="rpt-edit-btn" id="btnExportRptXlsx">📊 Excel</button>
             <button class="rpt-edit-btn" id="btnExportRptEditable">✏️ Editável</button>
             <button class="rpt-edit-btn" id="btnEditMeta">✏️ Editar</button>
           </div>
@@ -731,6 +732,127 @@
         _download(html, `GeracaoTech_Relatorio_Editavel.html`, "text/html");
         toast("Relatório editável exportado!", "success");
       });
+
+      document
+      .getElementById("btnExportRptXlsx")
+      ?.addEventListener("click", () => {
+        try {
+          exportReportXlsx(allData, meta, dataStr, horaStr);
+          toast("Relatório Excel exportado!", "success");
+        } catch (err) {
+          toast("Erro ao exportar Excel: " + err.message, "error");
+        }
+      });
+  }
+
+  function exportReportXlsx(allData, meta, dataStr, horaStr) {
+    if (typeof XLSX === "undefined")
+      throw new Error("Biblioteca XLSX não carregada.");
+
+    const wb = XLSX.utils.book_new();
+
+    // ---------- Aba 1: Resumo ----------
+    const resumoAoA = [
+      [meta.titulo],
+      [meta.subtitulo],
+      [meta.orgao],
+      [`Gerado em ${dataStr} às ${horaStr}`],
+      [],
+      [
+        "Turma",
+        "Inscritos",
+        "Participaram ≥1×",
+        "Presença ≥75%",
+        "Aprovados",
+        "Freq. média (%)",
+        "Progresso médio (%)",
+      ],
+    ];
+
+    let totInscritos = 0,
+      totAtivos = 0,
+      totMinimo = 0,
+      totAprovados = 0;
+
+    GT.FORMATIONS.forEach((f) => {
+      const stats = calcStats(allData[f.id] || []);
+      if (!stats) {
+        resumoAoA.push([f.label, 0, 0, 0, 0, "", ""]);
+        return;
+      }
+      const aprovados = stats.statusCounts["aprovado"] || 0;
+      totInscritos += stats.total;
+      totAtivos += stats.ativos;
+      totMinimo += stats.comMinimo;
+      totAprovados += aprovados;
+      resumoAoA.push([
+        f.label,
+        stats.total,
+        stats.ativos,
+        stats.comMinimo,
+        aprovados,
+        Number(stats.freqMedia.toFixed(1)),
+        stats.progressoMedia != null
+          ? Number(stats.progressoMedia.toFixed(1))
+          : "",
+      ]);
+    });
+    resumoAoA.push([
+      "TOTAL",
+      totInscritos,
+      totAtivos,
+      totMinimo,
+      totAprovados,
+      "",
+      "",
+    ]);
+
+    const wsResumo = XLSX.utils.aoa_to_sheet(resumoAoA);
+    wsResumo["!cols"] = [
+      { wch: 24 },
+      { wch: 10 },
+      { wch: 16 },
+      { wch: 14 },
+      { wch: 10 },
+      { wch: 16 },
+      { wch: 18 },
+    ];
+    XLSX.utils.book_append_sheet(wb, wsResumo, "Resumo");
+
+    // ---------- Uma aba por turma, com os alunos e status ----------
+    GT.FORMATIONS.forEach((f) => {
+      const students = allData[f.id] || [];
+      if (!students.length) return;
+
+      const rows = students
+        .slice()
+        .sort((a, b) => (a.nome || "").localeCompare(b.nome || "", "pt-BR"))
+        .map((s) => {
+          const status = GT.calcStatus(s);
+          const nota = GT.calcNotaMedia(s);
+          return {
+            Nome: s.nome || "",
+            "Presença (%)": s.presencaFinalPlat ?? "",
+            "Progresso (%)": s.progressoCurso ?? "",
+            "Nota Média": nota != null ? Number(nota.toFixed(2)) : "",
+            Status: status.label,
+          };
+        });
+
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws["!cols"] = [
+        { wch: 40 },
+        { wch: 12 },
+        { wch: 13 },
+        { wch: 11 },
+        { wch: 26 },
+      ];
+      // Nome de aba: máx. 31 chars, sem caracteres proibidos pelo Excel
+      const sheetName = f.label.replace(/[\\/?*\[\]:]/g, "-").slice(0, 31);
+      XLSX.utils.book_append_sheet(wb, ws, sheetName);
+    });
+
+    XLSX.writeFile(wb, "GeracaoTech_Relatorio.xlsx");
   }
 
   function _download(content, filename, type) {

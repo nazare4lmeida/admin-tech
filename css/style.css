@@ -2593,3 +2593,85 @@ tr:has(.row-checkbox:checked) {
 .modal-field input::placeholder {
   color: #9ca3af;
 }
+
+/* ============================================================
+   DUPLICADOS — modal de detecção de alunos duplicados
+   ============================================================ */
+.dup-group {
+  background: var(--bg3);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm, 8px);
+  padding: 10px 12px;
+}
+.dup-group-head {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text2);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.dup-badge {
+  font-size: 10.5px;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 20px;
+}
+.dup-badge-identico {
+  background: #fee2e2;
+  color: #7f1d1d;
+}
+.dup-badge-semelhante {
+  background: #fef9c3;
+  color: #713f12;
+}
+.dup-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 4px;
+  border-top: 1px solid var(--border);
+  font-size: 13px;
+}
+.dup-row:first-of-type {
+  border-top: none;
+}
+.dup-name {
+  font-weight: 600;
+  color: var(--text1);
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dup-turma {
+  font-size: 11.5px;
+  color: var(--text3);
+  white-space: nowrap;
+}
+.dup-extra {
+  font-size: 11px;
+  color: var(--text3);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.dup-del-btn {
+  background: none;
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 3px 9px;
+  font-size: 11.5px;
+  color: #dc2626;
+  cursor: pointer;
+  font-family: var(--font);
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+.dup-del-btn:hover {
+  background: #fee2e2;
+  border-color: #dc2626;
+}
